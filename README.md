@@ -3,6 +3,8 @@
 [Note: cruAKtemp is still in development and likely does not yet work
 as a package or WMT component]
 
+[Note: this version does *not* contain the netcdf file!  Because uncompressed, it is too large for github.]
+
 The Python 2.7 package cruAKtemp provides access to a subsample of CRU NCEP
 data temperature for Alaska from:
 
