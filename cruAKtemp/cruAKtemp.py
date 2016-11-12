@@ -42,6 +42,7 @@ class CruAKtempMethod():
         self._longitude = None # Will point to this model's longitude grid
         self._temperature = None # Will point to this model's temperature grid
         self.T_air = None        # Temperature grid
+        self._time_units = "days"  # Timestep is in days
 
     def verify_config_for_uniform_rectilinear_run(self, cfg):
         # Ensure that all necessary variables exist 
@@ -296,6 +297,12 @@ class CruAKtempMethod():
 
         self._current_date += change_amount
         self._current_timestep = self.timestep_from_date(self._current_date)
+
+    def get_current_timestep(self):
+        return self.timestep_from_date(self._current_date)
+
+    def get_end_timestep(self):
+        return self.timestep_from_date(self.last_date)
 
     def update_temperature_values(self):
         """Update the temperature array values based on the current date"""

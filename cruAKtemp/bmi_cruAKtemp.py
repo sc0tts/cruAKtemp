@@ -36,13 +36,23 @@ class BmiCruAKtempMethod():
 
     _output_var_names = (
         'atmosphere_bottom_air__temperature',
-        'datetime__start',
-        'datetime__end')
+    )
+
+    # Perhaps some day, the input and output days will be read here
+    #_output_var_names = (
+    #    'atmosphere_bottom_air__temperature',
+    #    'datetime__start',
+    #    'datetime__end')
 
     _var_name_map = {
-        'atmosphere_bottom_air__temperature':        'T_air',
-        'datetime__start':                           'start_date',
-        'datetime__end':                             'end_date'}
+        'atmosphere_bottom_air__temperature':        'T_air'
+    }
+
+    # Perhaps some day, ...
+    #_var_name_map = {
+    #    'atmosphere_bottom_air__temperature':        'T_air',
+    #    'datetime__start':                           '_start_date',
+    #    'datetime__end':                             '_end_date'}
 
     _var_units_map = {
         'atmosphere_bottom_air__temperature':        'deg_C',
@@ -123,7 +133,13 @@ class BmiCruAKtempMethod():
         return self._var_units_map[ long_var_name ]
 
     def get_current_time(self):
-        return self._model.current_date
+        return self._model.get_current_timestep()
+
+    def get_end_time(self):
+        return self._model.get_end_timestep()
+
+    def get_time_units(self):
+        return self._model._time_units
 
     def update(self):
         # Ensure that we've already initialized the run
@@ -166,10 +182,10 @@ class BmiCruAKtempMethod():
             print("  no update run")
             return
 
-        if stop_date > self._model.end_date:
-            print("Warning: update_until date--%d--was greater than end_date--%d" % (stop_date, self._model.end_date))
-            print("  setting stop_date to end_date")
-            stop_date = self.end_date
+        if stop_date > self._model._end_date:
+            print("Warning: update_until date--%d--was greater than end_date--%d" % (stop_date, self._model._end_date))
+            print("  setting stop_date to _end_date")
+            stop_date = self._end_date
 
         # Run update() one timestep at a time until stop_date
         date = self._model.current_date
@@ -192,14 +208,11 @@ class BmiCruAKtempMethod():
             self._model.print_final_report(\
                     comp_name='Permamodel CruAKtemp component')
 
-    def get_end_time(self):
-        return self._model.end_date
-
     def get_grid_type(self, grid_number):
         return self._grid_type[grid_number]
 
     def get_time_step(self):
-        print("self._model._timestep: %s" % self._model._timestep)
+        #print("self._model._timestep: %s" % self._model._timestep)
         # Model keeps track of timestep as a timedelta
         # Here, find the seconds and divide by seconds/day 
         # to get the number of days
@@ -241,6 +254,7 @@ class BmiCruAKtempMethod():
     def get_grid_shape(self, grid_id):
         """Number of rows and columns of uniform rectilinear grid."""
         var_name = self._grids[grid_id]
+        print("shape of {}".format(var_name))
         value = np.array(self.get_value_ref(var_name)).shape
         return value
 
