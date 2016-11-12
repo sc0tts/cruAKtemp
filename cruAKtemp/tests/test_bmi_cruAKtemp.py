@@ -49,13 +49,15 @@ def test_get_output_var_names():
     ct = cruAKtemp.bmi_cruAKtemp.BmiCruAKtempMethod()
     ct.initialize(cfg_file=default_config_filename)
     output_vars = ct.get_output_var_names()
-    output_list = ('atmosphere_bottom_air__temperature', 'datetime__start',
-                   'datetime__end')
+    output_list = ('atmosphere_bottom_air__temperature',)
+    # In the future, we may include the start and end datetimes as outputs
+    #output_list = ('atmosphere_bottom_air__temperature', 'datetime__start',
+    #               'datetime__end')
     assert_equal(output_vars, output_list)
 
 def test_get_var_name():
     ct = cruAKtemp.bmi_cruAKtemp.BmiCruAKtempMethod()
     ct.initialize(cfg_file=default_config_filename)
-    this_var_name = ct.get_var_name('datetime__start')
-    assert_equal(this_var_name, 'start_date')
+    this_var_name = ct.get_var_name('atmosphere_bottom_air__temperature')
+    assert_equal(this_var_name, 'T_air')
 

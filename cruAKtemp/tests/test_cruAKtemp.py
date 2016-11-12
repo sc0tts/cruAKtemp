@@ -102,6 +102,6 @@ def test_can_increment_to_end_of_run():
     this_timedelta = datetime.timedelta(days=number_of_days)
     ct.increment_date(this_timedelta)
     ct.update_temperature_values()
-    ct._T_air.tofile("end_T_air.dat")
+    ct.T_air.tofile("end_T_air.dat")
     # Note: nc time of 4000 corresponds to model date of Dec 15, 2010
 
