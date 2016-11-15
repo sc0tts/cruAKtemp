@@ -1,0 +1,14 @@
+
+README_source_of_lowres_files
+
+The low resolution versions of the cruNCEP data here were created by subsampling
+a subset of the full cruNCEP data.  
+
+This was done to have a reasonably small file to use.  Here, the data files are 20-30MB instead of the 4.8GB of the original, full-resolution files.
+
+Also, the netcdf format is much more convenient than the geoTIFF format used
+in the originals.
+
+Netcdf4 is used because unlike netcdf3, it can compress the data files.  
+Otherwise, the data files would be too large to use with github, which
+has a 100MB limit on individual file sizes.
