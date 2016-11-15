@@ -11,6 +11,6 @@ setup(name='cruAKtemp',
       description='cruAKtemp',
       long_description=open('README.md').read(),
       packages=find_packages(),
-      install_requires=('numpy', 'nose',),
+      install_requires=('numpy', 'nose', 'netcdf4'),
       package_data={'': ['examples/*', 'data/*']}
 )

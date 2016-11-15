@@ -18,9 +18,9 @@ from nose.tools import (assert_is_instance, assert_greater_equal,
                         assert_greater, assert_in, assert_true,
                         assert_equal)
 # Using netcdf3
-from scipy.io.netcdf import NetCDFFile as Dataset
+#from scipy.io.netcdf import NetCDFFile as Dataset
 # Using netcdf4
-#from netCDF4 import Dataset
+from netCDF4 import Dataset
 import datetime
 
 def assert_between(value, minval, maxval):
