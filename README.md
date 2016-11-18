@@ -23,3 +23,19 @@ through December 2009.
 The original dataset was in the form of a set of geotiff files.  This 
 package provides access to the data via BMI functions and the data itself
 is encoded as a single netCDF file.
+
+# bmi-tester
+
+If you have installed CSDMS's 'bmi-tester' package, you can verify that
+cruAKtemp is BMI-compliant by running:
+
+   bmi-tester cruAKtemp.bmi\_cruAKtemp.BmiCruAKtempMethod 
+
+This exact command is also in the file:
+
+   run\_bmi-tester\_cruAKtemp
+
+so you can run this from the command line with:
+
+  . ./run\_bmi-tester\_cruAKtemp
+
