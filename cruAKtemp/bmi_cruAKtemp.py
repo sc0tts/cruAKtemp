@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
-"""  Frost Number by Nelson and Outcalt 1983. DOI: 10.2307/1551363. http://www.jstor.org/stable/1551363
+"""
+bmi_cruAKtemp.py
+
+Provides BMI access to netcdf files containg cruNCEP data for
+monthly temperature values for Alaska
+
+For use with Permamodel components
+
 """
 
 import numpy as np
@@ -11,12 +18,7 @@ class FrostnumberMethod( frost_number.BmiFrostnumberMethod ):
     _thisname = 'this name'
 """
 
-#class BmiCruAKtemp( perma_base.PermafrostComponent ):
 class BmiCruAKtempMethod():
-
-    """ Use CRU NCEP downscaled values for Alaska
-        to provide average monthly temperatures
-        for Permafrost components"""
 
     _name = 'CruAKtemp module'
 
@@ -38,28 +40,16 @@ class BmiCruAKtempMethod():
         'atmosphere_bottom_air__temperature',
     )
 
-    # Perhaps some day, the input and output days will be read here
-    #_output_var_names = (
-    #    'atmosphere_bottom_air__temperature',
-    #    'datetime__start',
-    #    'datetime__end')
-
     _var_name_map = {
         'atmosphere_bottom_air__temperature':        'T_air'
     }
-
-    # Perhaps some day, ...
-    #_var_name_map = {
-    #    'atmosphere_bottom_air__temperature':        'T_air',
-    #    'datetime__start':                           '_start_date',
-    #    'datetime__end':                             '_end_date'}
 
     _var_units_map = {
         'atmosphere_bottom_air__temperature':        'deg_C',
         'datetime__start':                           'days',
         'datetime__end':                             'days'}
 
-    #-------------------------------------------------------------------
+
     def __init__(self):
         self._model = None
         self._values = {}
@@ -67,17 +57,15 @@ class BmiCruAKtempMethod():
         self._grids = {}
         self._grid_type = {}
 
+
     def initialize(self, cfg_file=None):
         self._model = cruAKtemp.CruAKtempMethod()
 
         self._model.initialize_from_config_file(cfg_filename=cfg_file)
-        #self._model.initialize_cruAKtemp_component()
 
-        # Set the name of this component
         self._name = "Permamodel CRU-AK Temperature Component"
 
-        # Verify that all input and output variable names are in the
-        # variable name and the units map
+        # Verify that all input and output variable names are mapped
         for varname in self._input_var_names:
             assert(varname in self._var_name_map)
             assert(varname in self._var_units_map)
@@ -103,7 +91,6 @@ class BmiCruAKtempMethod():
             'datetime__start':                    self._model.first_date,
             'datetime__end':                      self._model.last_date}
 
-        # initialize() tasks complete.  Update status.
         self.status = 'initialized'
 
     def get_attribute(self, att_name):
@@ -183,8 +170,9 @@ class BmiCruAKtempMethod():
             return
 
         if stop_date > self._model._end_date:
-            print("Warning: update_until date--%d--was greater than end_date--%d" % (stop_date, self._model._end_date))
-            print("  setting stop_date to _end_date")
+            print("Warning: update_until date--%d" % stop_date)
+            print("  was greater than end_date--%d." % self._model._end_date)
+            print("  Setting stop_date to _end_date")
             stop_date = self._end_date
 
         # Run update() one timestep at a time until stop_date
@@ -212,9 +200,8 @@ class BmiCruAKtempMethod():
         return self._grid_type[grid_number]
 
     def get_time_step(self):
-        #print("self._model._timestep: %s" % self._model._timestep)
         # Model keeps track of timestep as a timedelta
-        # Here, find the seconds and divide by seconds/day 
+        # Here, find the seconds and divide by seconds/day
         # to get the number of days
         return self._model._timestep.total_seconds()/(24*60*60.0)
 

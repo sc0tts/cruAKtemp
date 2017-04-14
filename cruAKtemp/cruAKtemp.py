@@ -48,9 +48,6 @@ class CruAKtempMethod():
         self._time_units = "days"  # Timestep is in days
 
     def verify_config_for_uniform_rectilinear_run(self, cfg):
-        # Ensure that all necessary variables exist 
-        # for uniform_rectilinear grid type
-
         # Need at least one grid
         assert_greater_equal(len(cfg['grids']), 1)
 
@@ -58,7 +55,6 @@ class CruAKtempMethod():
         # name is a string, type is a type
         for k, v in cfg['grids'].iteritems():
             assert_true(isinstance(k, str))
-            # Actually, I don't think this assertion tests the right thing
             assert_true(isinstance(type(v), type))
 
         # Grid shape can be used to create a numpy array
@@ -208,12 +204,6 @@ class CruAKtempMethod():
                     #(g, cfg_struct['grid_shape'], cfg_struct['grids'][g])
             exec(grid_assignment_string)
 
-        # Allocate the lat and lon arrays to what the temperature grid is
-        #self._latitude = np.zeros(self._grid_shape, np.float)
-        #self._longitude = np.zeros(self._grid_shape, np.float)
-        #self._latitude = np.zeros(cfg_struct['grid_shape'], np.float)
-        #self._longitude = np.zeros(cfg_struct['grid_shape'], np.float)
-
         # Open the netcdf files
         self._cru_temperature_ncfile = \
             Dataset(self._cru_temperature_nc_filename, 'r', mmap=True)
@@ -233,8 +223,6 @@ class CruAKtempMethod():
             self._nc_jskip = 1
 
         # Calculate the end points
-        #self._nc_i1 = self._nc_i0 + self._nc_iskip * self._grid_shape[0]
-        #assert_equal(self._nc_i1, self.i_nc_from_i(self._grid_shape[0]))
         self._nc_i1 = self.i_nc_from_i(self._grid_shape[0])
         self._nc_j1 = self.j_nc_from_j(self._grid_shape[1])
 
@@ -253,9 +241,6 @@ class CruAKtempMethod():
         # when the program ends or thenetcdf file is closed
         nc_latitude = None
         nc_longitude = None
-
-        #self._latitude.tofile("test_latitude.dat")
-        #self._longitude.tofile("test_longitude.dat")
 
         # Read initial data
         # Set the temperature file data to a variable
@@ -310,7 +295,7 @@ class CruAKtempMethod():
     def update_temperature_values(self):
         """Update the temperature array values based on the current date"""
         # Note: in the future, we may want to do this from an open handle
-        # to the netcdf file instead of from the 'fully read-in' 
+        # to the netcdf file instead of from the 'fully read-in'
         # _temperature grid
 
         # For the cru temperature grid, the first time corresponds to dates
@@ -323,7 +308,6 @@ class CruAKtempMethod():
         this_index = current_month + 12 *(current_year - model_year0) - 1
 
         self.T_air = self._temperature[this_index, :, :]
-        #self.T_air.tofile("test_T_air.dat")
 
     def read_config_file(self):
         # Open CFG file to read data

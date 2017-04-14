@@ -1,3 +1,7 @@
+# Ignore default output files
+default_temperature.cfg
+end_T_air.dat
+
 # ---------------------------------------------------------------------------- #
 ### Added from: 
 ###   https://github.com/github/gitignore/blob/master/Python.gitignore
