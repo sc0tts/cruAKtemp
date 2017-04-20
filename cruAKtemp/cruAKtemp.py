@@ -21,7 +21,7 @@ from nose.tools import (assert_is_instance, assert_greater_equal,
 #from scipy.io.netcdf import NetCDFFile as Dataset
 # Using netcdf4
 from netCDF4 import Dataset
-import datetime
+import datetime as dt
 
 def assert_between(value, minval, maxval):
     """Fail if value is not between minval and maxval"""
@@ -66,6 +66,66 @@ class CruAKtempMethod():
                   str(cfg['grid_shape']))
             raise
 
+    def get_config_from_oldstyle_file(self, cfg_filename):
+        cfg_struct = {}
+        grid_struct = {}
+        try:
+            with open(cfg_filename, 'r') as cfg_file:
+                # this is based loosely on read_config_file in BMI_base.py
+                while True:
+                    # Read lines from config file until no more remain
+                    line = cfg_file.readline()
+                    if line == "":
+                        break
+
+                    # Comments start with '#'
+                    COMMENT = (line[0] == '#')
+
+                    words = line.split('|')
+                    if (len(words) ==4) and (not COMMENT):
+                        var_name = words[0].strip()
+                        value = words[1].strip()
+                        var_type = words[2].strip()
+
+                        # Process the variables based on variable name
+                        if var_name[-4:] == 'date':
+                            # date variables end with "_date"
+                            cfg_struct[var_name] = \
+                                dt.datetime.strptime(value, "%Y-%m-%d")
+                                #dt.datetime.strptime(value, "%Y-%m-%d").date()
+                        elif var_name[0:4] == 'grid':
+                            # grid variables are processed after cfg file read
+                            grid_struct[var_name] = value
+                        elif var_name == 'timestep':
+                            # timestep is a timedelta object
+                            cfg_struct[var_name] = \
+                                dt.timedelta(days=int(value))
+                        elif var_type == 'int':
+                            # Convert integers to int
+                            cfg_struct[var_name] = int(value)
+                        else:
+                            # Everything else is just passed as a string
+                            cfg_struct[var_name] = value
+
+        except:
+            print("\nError opening configuration file in\
+                  initialize_from_config_file()")
+            raise
+
+        # After reading the files, process the grid_struct values
+        print("cfg_struct (orig):")
+        print(cfg_struct)
+        print("grid_struct:")
+        print(grid_struct)
+        cfg_struct['grid_shape'] = (int(grid_struct['grid_columns']),
+                                    int(grid_struct['grid_rows']))
+        cfg_struct['grid_type'] = grid_struct['grid_type']
+        cfg_struct['grids'] = {grid_struct['grid_name']: 'np.float'}
+
+        print("cfg_struct (with grid):")
+        print(cfg_struct)
+        return cfg_struct
+
     def get_config_from_yaml_file(self, cfg_filename):
         cfg_struct = None
         try:
@@ -76,6 +136,15 @@ class CruAKtempMethod():
                   initialize_from_config_file()")
             raise
 
+        # print("cfg_struct['grids']")
+        # print(cfg_struct['grids'])
+        # print("cfg_struct['grids']['temperature']")
+        # print(cfg_struct['grids']['temperature'])
+        # print("cfg_struct['grid_shape']")
+        # print(cfg_struct['grid_shape'])
+        # exit(0)
+        print("cfg_struct (from yaml):")
+        print(cfg_struct)
         return cfg_struct
 
     def verify_run_type_parameters(self, cfg_struct):
@@ -158,7 +227,11 @@ class CruAKtempMethod():
            cfg_filename = os.path.join(examples_directory,
                                    'default_temperature.cfg')
 
-        cfg_struct = self.get_config_from_yaml_file(cfg_filename)
+        print("remove this after testing...")
+        #cfg_filename = os.path.join(examples_directory,
+        #                        'default_temperature_yaml.cfg')
+        #cfg_struct = self.get_config_from_yaml_file(cfg_filename)
+        cfg_struct = self.get_config_from_oldstyle_file(cfg_filename)
 
         # Verify that the parameters are correct for the grid type
         self.verify_run_type_parameters(cfg_struct)
@@ -281,7 +354,7 @@ class CruAKtempMethod():
         and update the timestep to reflect that change
         """
         # Ensure that we've got a timedelta amount
-        assert_equal(type(change_amount), type(datetime.timedelta(days=1)))
+        assert_equal(type(change_amount), type(dt.timedelta(days=1)))
 
         self._current_date += change_amount
         self._current_timestep = self.timestep_from_date(self._current_date)
