@@ -113,17 +113,11 @@ class CruAKtempMethod():
             raise
 
         # After reading the files, process the grid_struct values
-        print("cfg_struct (orig):")
-        print(cfg_struct)
-        print("grid_struct:")
-        print(grid_struct)
         cfg_struct['grid_shape'] = (int(grid_struct['grid_columns']),
                                     int(grid_struct['grid_rows']))
         cfg_struct['grid_type'] = grid_struct['grid_type']
         cfg_struct['grids'] = {grid_struct['grid_name']: 'np.float'}
 
-        print("cfg_struct (with grid):")
-        print(cfg_struct)
         return cfg_struct
 
     def get_config_from_yaml_file(self, cfg_filename):
@@ -136,15 +130,6 @@ class CruAKtempMethod():
                   initialize_from_config_file()")
             raise
 
-        # print("cfg_struct['grids']")
-        # print(cfg_struct['grids'])
-        # print("cfg_struct['grids']['temperature']")
-        # print(cfg_struct['grids']['temperature'])
-        # print("cfg_struct['grid_shape']")
-        # print(cfg_struct['grid_shape'])
-        # exit(0)
-        print("cfg_struct (from yaml):")
-        print(cfg_struct)
         return cfg_struct
 
     def verify_run_type_parameters(self, cfg_struct):
@@ -227,9 +212,6 @@ class CruAKtempMethod():
            cfg_filename = os.path.join(examples_directory,
                                    'default_temperature.cfg')
 
-        print("remove this after testing...")
-        #cfg_filename = os.path.join(examples_directory,
-        #                        'default_temperature_yaml.cfg')
         #cfg_struct = self.get_config_from_yaml_file(cfg_filename)
         cfg_struct = self.get_config_from_oldstyle_file(cfg_filename)
 
