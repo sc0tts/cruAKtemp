@@ -1,4 +1,4 @@
-name: cruAKtempModel
+name: CRUAKTemp
 language: python
 
 package: permamodel.components.cruAKtemp
