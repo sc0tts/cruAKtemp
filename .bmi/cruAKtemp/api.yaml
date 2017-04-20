@@ -1,0 +1,6 @@
+name: cruAKtempModel
+language: python
+
+package: permamodel.components.cruAKtemp
+class: BmiCruAKtempMethod
+initialize_args: "cruAKtemp_model.cfg"

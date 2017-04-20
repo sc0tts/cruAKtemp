@@ -1,0 +1,9 @@
+author: J. Scott Stewart
+doi:
+email: james.stewart@colorado.edu
+license: GPL
+url:
+version: 0.1
+summary: "The cruAKtemp model provides BMI-mediated access to
+  a netcdf file containing the temperature data of the 
+  cruNCEP monthly average temperature fields for Alaska"
