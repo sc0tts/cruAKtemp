@@ -91,7 +91,7 @@ class BmiCruAKtempMethod():
             'datetime__start':                    self._model.first_date,
             'datetime__end':                      self._model.last_date}
 
-        self.status = 'initialized'
+        self._model.status = 'initialized'
 
     def get_attribute(self, att_name):
 
