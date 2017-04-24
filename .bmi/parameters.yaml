@@ -26,31 +26,31 @@ dataset_start_date:
   description: first day with valid data in dataset
   value:
     type: string
-    default: 1901-01-01
+    default: '1901-01-01'
     units: '-'
 dataset_end_date:
   description: last day with valid data in dataset
   value:
     type: string
-    default: 2009-12-31
+    default: '2009-12-31'
     units: '-'
 reference_date:
   description: model time is relative to this date
   value:
     type: string
-    default: 1900-01-01
+    default: '1900-01-01'
     units: '-'
 model_start_date:
   description: first day with valid model data
   value:
     type: string
-    default: 1902-01-01
+    default: '1902-01-01'
     units: '-'
 model_end_date:
   description: last day with valid model data
   value:
     type: string
-    default: 1910-12-31
+    default: '1910-12-31'
     units: '-'
 grid_name:
   description: name of the model grid
