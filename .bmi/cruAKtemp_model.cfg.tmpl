@@ -14,10 +14,10 @@ model_start_date    | {model_start_date}     | string   | first day with valid m
 model_end_date      | {model_start_date}     | string   | last day with valid model data
 # Grid variables are processed separately after all config variables have been read in
 # need to create np.float array of grids
-grid_name           | grid_name              | string   | name of the model grid
-grid_type           | grid_type              | string   | form of the model grid
-grid_columns        | grid_columns           | int      | number of columns in model grid
-grid_rows           | grid_rows              | int      | number of columns in model grid
+grid_name           | {grid_name}            | string   | name of the model grid
+grid_type           | {grid_type}            | string   | form of the model grid
+grid_columns        | {grid_columns}         | int      | number of columns in model grid
+grid_rows           | {grid_rows}            | int      | number of columns in model grid
 #  with temperature as np.zeros((grid_columns, grid_rows), dtype=np.float)
 i_ul                | {i_ul}                 | int      | i-coord of upper left corner model domain
 j_ul                | {i_ul}                 | int      | j-coord of upper left corner model domain
