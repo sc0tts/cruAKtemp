@@ -331,12 +331,12 @@ class CruAKtempMethod():
                     self._timestep.days
         return this_timestep
 
-    def increment_date(self, change_amount):
+    def increment_date(self, change_amount=None):
         """Change the current date by a timedelta amount
         and update the timestep to reflect that change
         """
-        # Ensure that we've got a timedelta amount
-        assert_equal(type(change_amount), type(dt.timedelta(days=1)))
+        if change_amount is None:
+            change_amount = dt.timedelta(days=self._timestep)
 
         self._current_date += change_amount
         self._current_timestep = self.timestep_from_date(self._current_date)
@@ -346,6 +346,11 @@ class CruAKtempMethod():
 
     def get_end_timestep(self):
         return self.timestep_from_date(self.last_date)
+
+    def update(self):
+        # Update values for one timestep
+        self.increment_date()
+        self.update_temperature_values()
 
     def update_temperature_values(self):
         """Update the temperature array values based on the current date"""

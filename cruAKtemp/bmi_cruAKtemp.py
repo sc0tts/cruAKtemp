@@ -130,18 +130,11 @@ class BmiCruAKtempMethod():
         return self._model._time_units
 
     def update(self):
-        # Ensure that we've already initialized the run
-        assert(self._model.status == 'initialized')
-
         # Update the time
-        self._model.current_date += self._model.dt
+        self._model.update()
 
-        # Get new input values
-        self._model.open_input_files()
-
-        # Calculate the new frost number values
-        self._model.get_current_temperatures()
-        self._values['atmosphere_bottom_air__temperature'] =\
+        # Set the bmi temperature to the updated value in the model
+        self._values['atmosphere_bottom_air__temperature'] = \
                 self._model.T_air
 
     def update_frac(self, time_fraction):
