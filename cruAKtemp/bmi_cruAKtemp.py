@@ -143,18 +143,11 @@ class BmiCruAKtempMethod():
         can be updated by fractional day, but update() will
         only be called if the integer value of the day changes
         """
-        assert(self._model.status == 'initialized')
-
-        current_model_date = int(self._model.current_date)
-        self._model.current_date += time_fraction * self._model.dt
-        new_model_date = int(self._model.current_date)
-
-        if new_model_date > current_model_date:
-            # Note: other than incrementing the timestep, this should be
-            #       the same as in update()
-            self._model.get_current_temperatures()
-            self._values['atmosphere_bottom_air__temperature'] =\
-                    self._model.T_air
+        self._model.increment_date(
+            change_amount=time_fraction * self._model._timestep)
+        self._model.update_temperature_values()
+        self._values['atmosphere_bottom_air__temperature'] = \
+                self._model.T_air
 
     def update_until(self, stop_date):
         if stop_date < self._model.current_date:
