@@ -336,7 +336,7 @@ class CruAKtempMethod():
         and update the timestep to reflect that change
         """
         if change_amount is None:
-            change_amount = dt.timedelta(days=self._timestep)
+            change_amount = self._timestep
 
         self._current_date += change_amount
         self._current_timestep = self.timestep_from_date(self._current_date)
