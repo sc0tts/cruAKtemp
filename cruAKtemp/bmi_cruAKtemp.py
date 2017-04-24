@@ -20,34 +20,6 @@ class FrostnumberMethod( frost_number.BmiFrostnumberMethod ):
 
 class BmiCruAKtempMethod():
 
-    _name = 'CruAKtemp module'
-
-    _att_map = {
-        'model_name':         'PermaModel_cruAKtemp',
-        'version':            '0.1',
-        'author_name':        'J. Scott Stewart',
-        'grid_type':          'uniform_rectlinear',
-        'time_step_type':     'fixed',
-        'step_method':        'explicit',
-        'comp_name':          'cruAKtemp',
-        'model_family':       'PermaModel',
-        'cfg_extension':      '_cruAKtemp_model.cfg',
-        'time_units':         'days' }
-
-    _input_var_names = ()
-
-    _output_var_names = (
-        'atmosphere_bottom_air__temperature',
-    )
-
-    _var_name_map = {
-        'atmosphere_bottom_air__temperature':        'T_air'
-    }
-
-    _var_units_map = {
-        'atmosphere_bottom_air__temperature':        'deg_C',
-        'datetime__start':                           'days',
-        'datetime__end':                             'days'}
 
 
     def __init__(self):
@@ -56,6 +28,35 @@ class BmiCruAKtempMethod():
         self._var_units = {}
         self._grids = {}
         self._grid_type = {}
+
+        self._name = 'CruAKtemp module'
+
+        self._att_map = {
+            'model_name':         'PermaModel_cruAKtemp',
+            'version':            '0.1',
+            'author_name':        'J. Scott Stewart',
+            'grid_type':          'uniform_rectlinear',
+            'time_step_type':     'fixed',
+            'step_method':        'explicit',
+            'comp_name':          'cruAKtemp',
+            'model_family':       'PermaModel',
+            'cfg_extension':      '_cruAKtemp_model.cfg',
+            'time_units':         'days' }
+
+        self._input_var_names = ()
+
+        self._output_var_names = (
+            'atmosphere_bottom_air__temperature',
+        )
+
+        self._var_name_map = {
+            'atmosphere_bottom_air__temperature':        'T_air'
+        }
+
+        self._var_units_map = {
+            'atmosphere_bottom_air__temperature':        'deg_C',
+            'datetime__start':                           'days',
+            'datetime__end':                             'days'}
 
 
     def initialize(self, cfg_file=None):
