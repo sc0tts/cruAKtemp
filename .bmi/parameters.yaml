@@ -1,95 +1,95 @@
 filename:
-  description: name of this file
+  description: Name of this file
   value:
     type: string
     default: default_temperature.cfg
     units: '-'
 run_description:
-  description: description of this configuration
+  description: Description of this configuration
   value:
     type: string
     default: north slope subset cruNCEP
     units: '-'
 run_region:
-  description: general location of this domain
+  description: General location of this domain
   value:
     type: string
     default: Alaska
     units: '-'
 run_resolution:
-  description: highres or lowres
+  description: High- or low-resolution data
   value:
     type: string
     default: lowres
     units: '-'
 dataset_start_date:
-  description: first day with valid data in dataset
+  description: First day with valid data in dataset
   value:
     type: string
     default: '1901-01-01'
     units: '-'
 dataset_end_date:
-  description: last day with valid data in dataset
+  description: Last day with valid data in dataset
   value:
     type: string
     default: '2009-12-31'
     units: '-'
 reference_date:
-  description: model time is relative to this date
+  description: Model time is relative to this date
   value:
     type: string
     default: '1900-01-01'
     units: '-'
 model_start_date:
-  description: first day with valid model data
+  description: First day with valid model data
   value:
     type: string
     default: '1902-01-01'
     units: '-'
 model_end_date:
-  description: last day with valid model data
+  description: Last day with valid model data
   value:
     type: string
     default: '1910-12-31'
     units: '-'
 grid_name:
-  description: name of the model grid
+  description: Name of the model grid
   value:
     type: string
     default: temperature
     units: '-'
 grid_type:
-  description: form of the model grid
+  description: Form of the model grid
   value:
     type: string
     default: uniform_rectilinear
     units: '-'
 grid_columns:
-  description: number of columns in model grid
+  description: Number of columns in model grid
   value:
     type: int
     default: 40
     units: '-'
 grid_rows:
-  description: number of rows in model grid
+  description: Number of rows in model grid
   value:
     type: int
     default: 20
     units: '-'
 i_ul:
-  description: i-coord of upper left model domain
+  description: I-coordinate of upper left model domain
   value:
     type: int
     default: 50
     units: '-'
 j_ul:
-  description: j-coord of upper left model domain
+  description: J-coordinate of upper left model domain
   value:
     type: int
     default: 25
     units: '-'
 timestep:
-  description: model timestep
+  description: Model time step
   value:
     type: int
     default: 1
