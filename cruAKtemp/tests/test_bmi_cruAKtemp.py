@@ -30,7 +30,7 @@ def test_initialize_sets_times():
     # Can we call an initialize function?
     ct = cruAKtemp.bmi_cruAKtemp.BmiCruAKtempMethod()
     ct.initialize(cfg_file=default_config_filename)
-    assert_equal(ct._model.first_date, datetime.datetime(1902, 1, 1))
+    assert_equal(ct._model.first_date, datetime.date(1902, 1, 1))
 
 def test_att_map():
     ct = cruAKtemp.bmi_cruAKtemp.BmiCruAKtempMethod()

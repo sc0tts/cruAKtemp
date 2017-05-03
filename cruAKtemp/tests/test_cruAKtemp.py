@@ -78,20 +78,6 @@ def test_get_timestep_from_date():
     #...and make the date 100 days later
     assert_equal(ct.first_date+this_timedelta, ct._current_date)
 
-def test_can_increment_by_fractions_of_days():
-    ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
-    ct.initialize_from_config_file()
-
-    # Adding 1.8 days twice should add 3.6 days to the date
-    # which truncates to 3.0 days to the timestep
-    this_timestep = 0
-    number_of_days = 1.8
-    this_timedelta = datetime.timedelta(days=number_of_days)
-    ct.increment_date(this_timedelta)
-    ct.increment_date(this_timedelta)
-    assert_equal(ct.first_date+2*this_timedelta, ct._current_date)
-    assert_equal(int(this_timestep+2*number_of_days), ct._current_timestep)
-
 def test_can_increment_to_end_of_run():
     ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
     ct.initialize_from_config_file()
@@ -104,4 +90,3 @@ def test_can_increment_to_end_of_run():
     ct.update_temperature_values()
     ct.T_air.tofile("end_T_air.dat")
     # Note: nc time of 4000 corresponds to model date of Dec 15, 2010
-
