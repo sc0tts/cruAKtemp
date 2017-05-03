@@ -126,15 +126,18 @@ def test_getting_monthly_annual_temp_values():
     ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
     ct.initialize_from_config_file()
 
+    # Test prior months values
     actualvalues = [-28.700001, -24.799999, -16.600000, -2.700000,
                      7.800000, 11.000000, 7.100000, -0.300000,
                     -13.400000, -22.100000, -26.500000, -25.700001]
-    actualmean = -11.241668
     vallist = []
     for i in np.arange(0, 12):
         vallist.append(ct.T_air_prior_months[i][0, 0])
         assert_almost_equal(vallist[i], actualvalues[i], places=5)
-    assert_almost_equal(np.nanmean(vallist), actualmean, places=5)
+
+    # Test prior year value
+    actualmean = -11.241668
+    assert_almost_equal(ct.T_air_prior_year[0, 0], actualmean, places=5)
 
 
 def test_can_increment_to_end_of_run():
