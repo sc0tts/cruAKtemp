@@ -23,6 +23,7 @@ from nose.tools import (assert_is_instance, assert_greater_equal,
 # Using netcdf4
 from netCDF4 import Dataset
 import datetime as dt
+from dateutil.relativedelta import relativedelta
 
 def assert_between(value, minval, maxval):
     """Fail if value is not between minval and maxval"""
@@ -388,21 +389,42 @@ class CruAKtempMethod():
         self.increment_date()
         self.update_temperature_values()
 
+    def get_time_index(self, month, year):
+        """ Return the index of the time coordinate of the netcdf file
+            for a specified month and year """
+        return month + 12 * (year - self._first_valid_date.year) - 1
+
+    def get_temperatures_month_year(self, month, year):
+        """ Return the temperature field at specified month, year """
+        # Check for valid month, year
+        try:
+            testdate = dt.date(year, month, 1)
+        except:
+            raise ValueError("Month (%d) and Year (%d) can't be made a date"
+                             % (month, year))
+
+        testdate = dt.date(year, month, 1)
+        # Check that month, year are in range
+        if testdate < self._first_valid_date:
+            print("Too low")
+            raise ValueError(
+                "Month %d and year %d are before first valid model date: %s" %
+                (month, year, self._first_valid_date))
+        if testdate > self._last_valid_date:
+            print("Too high")
+            raise ValueError(
+                "Month %d and year %d are after last valid model date: %s" %
+                (month, year, self._last_valid_date))
+
+        idx = self.get_time_index(month, year)
+        assert idx >= 0
+        return self._temperature[idx, :, :]
+
+
     def update_temperature_values(self):
         """Update the temperature array values based on the current date"""
-        # Note: in the future, we may want to do this from an open handle
-        # to the netcdf file instead of from the 'fully read-in'
-        # _temperature grid
-
-        # For the cru temperature grid, the first time corresponds to dates
-        # in January, 1901
-        current_year = self._current_date.year
-        current_month = self._current_date.month
-
-        this_index = current_month + \
-                     12 *(current_year - self._first_valid_date.year) - 1
-
-        self.T_air = self._temperature[this_index, :, :]
+        self.T_air = self.get_temperatures_month_year(self._current_date.month,
+                                                      self._current_date.year)
 
     def read_config_file(self):
         # Open CFG file to read data

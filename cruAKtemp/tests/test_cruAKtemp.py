@@ -26,6 +26,7 @@ import datetime
 def test_testing():
     # This should pass as long as this routine is getting called
     # and all the import statements above are working
+
     assert(True)
 
 # ---------------------------------------------------
@@ -78,13 +79,60 @@ def test_get_timestep_from_date():
     #...and make the date 100 days later
     assert_equal(ct.first_date+this_timedelta, ct._current_date)
 
+def test_time_index_yields_correct_values():
+    """ Check that we get the expected index into the netcdf file
+        for specified month and year """
+    ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
+    ct.initialize_from_config_file()
+
+    # Test that first month yields index zero
+    month = 1
+    year = 1901
+    idx = ct.get_time_index(month, year)
+    assert_equal(idx, 0)
+
+    # Test that a year later yields index 12
+    month = 1
+    year = 1902
+    idx = ct.get_time_index(month, year)
+    assert_equal(idx, 12)
+
+    # Test that a century and a year later yields index 1212
+    month = 1
+    year = 2002
+    idx = ct.get_time_index(month, year)
+    assert_equal(idx, 1212)
+
+def test_specific_netcdf_values():
+    """ Test that indexing yields specific values chosen from file
+        Values were hand-verified using panoply tables"""
+    ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
+    ct.initialize_from_config_file()
+
+    # Indexes here are based on the reduced-resolution grid, if used
+    # Note: Panoply has 1-based indexes, so must add 1 to these
+    #       to get Panoply equivalent
+    t_idx = 0
+    x_idx = 0
+    y_idx = 0
+    assert_almost_equal(ct._temperature[t_idx, y_idx, x_idx], -26.1, places=5)
+
+    t_idx = 20
+    x_idx = 0
+    y_idx = 0
+    assert_almost_equal(ct._temperature[t_idx, y_idx, x_idx], -0.3, places=5)
+
+    t_idx = 20
+    x_idx = 0
+    y_idx = 6
+    assert_almost_equal(ct._temperature[t_idx, y_idx, x_idx], -1.9, places=5)
+
+
 def test_can_increment_to_end_of_run():
     ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
     ct.initialize_from_config_file()
 
-    # Adding 1.8 days twice should add 3.6 days to the date
-    # which truncates to 3.0 days to the timestep
-    number_of_days = ct._last_timestep
+    number_of_days = ct._last_timestep - ct._first_timestep
     this_timedelta = datetime.timedelta(days=number_of_days)
     ct.increment_date(this_timedelta)
     ct.update_temperature_values()
