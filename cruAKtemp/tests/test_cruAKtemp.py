@@ -21,24 +21,13 @@ import datetime
 
 
 # ---------------------------------------------------
-# Tests that ensure we are reaching this testing file
-# ---------------------------------------------------
-def test_testing():
-    # This should pass as long as this routine is getting called
-    # and all the import statements above are working
-
-    assert(True)
-
-# ---------------------------------------------------
 # Tests that the frost_number module is importing
 # ---------------------------------------------------
 def test_can_initialize_cruAKtemp_class():
     ct = cruAKtemp.cruAKtemp.CruAKtempMethod
 
-def test_for_cruAKtemp_utils():
-    ct = cu
-
 def test_write_gridfile():
+    """ Test that can write a gridfile to disk """
     # Create a temperature grid with default structure
     grid_desc = cruAKtemp.cruAKtemp_utils.write_gridfile('temperature')
 
@@ -55,14 +44,17 @@ def test_write_gridfile():
         pass
 
 def test_write_default_temperature_cfg_file():
+    """ test that util operation writes default cfg file """
     cruAKtemp.cruAKtemp_utils.generate_default_temperature_run_cfg_file(\
         SILENT=True)
 
 def test_initialize_opens_temperature_netcdf_file():
+    """ Test that temperature netcdf file is opened """
     ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
     ct.initialize_from_config_file()
 
 def test_get_timestep_from_date():
+    """ Test get timestep from a date """
     ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
     ct.initialize_from_config_file()
 
@@ -128,7 +120,25 @@ def test_specific_netcdf_values():
     assert_almost_equal(ct._temperature[t_idx, y_idx, x_idx], -1.9, places=5)
 
 
+def test_getting_monthly_annual_temp_values():
+    """ Test that prior_months and prior_year values are correct
+        Values were hand-verified using panoply tables"""
+    ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
+    ct.initialize_from_config_file()
+
+    actualvalues = [-28.700001, -24.799999, -16.600000, -2.700000,
+                     7.800000, 11.000000, 7.100000, -0.300000,
+                    -13.400000, -22.100000, -26.500000, -25.700001]
+    actualmean = -11.241668
+    vallist = []
+    for i in np.arange(0, 12):
+        vallist.append(ct.T_air_prior_months[i][0, 0])
+        assert_almost_equal(vallist[i], actualvalues[i], places=5)
+    assert_almost_equal(np.nanmean(vallist), actualmean, places=5)
+
+
 def test_can_increment_to_end_of_run():
+    """ Test that we can get values for last timestep """
     ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
     ct.initialize_from_config_file()
 
@@ -138,3 +148,5 @@ def test_can_increment_to_end_of_run():
     ct.update_temperature_values()
     ct.T_air.tofile("end_T_air.dat")
     # Note: nc time of 4000 corresponds to model date of Dec 15, 2010
+
+

@@ -47,6 +47,8 @@ class CruAKtempMethod():
         self._longitude = None # Will point to this model's longitude grid
         self._temperature = None # Will point to this model's temperature grid
         self.T_air = None        # Temperature grid
+        self.T_air_prior_months = None  # Temperature grid each prior 12 months
+        self.T_air_prior_year = None  # Temperature grid average prior 12 months
         self._time_units = "days"  # Timestep is in days
 
     def verify_config_for_uniform_rectilinear_run(self, cfg):
@@ -405,16 +407,9 @@ class CruAKtempMethod():
 
         testdate = dt.date(year, month, 1)
         # Check that month, year are in range
-        if testdate < self._first_valid_date:
-            print("Too low")
-            raise ValueError(
-                "Month %d and year %d are before first valid model date: %s" %
-                (month, year, self._first_valid_date))
-        if testdate > self._last_valid_date:
-            print("Too high")
-            raise ValueError(
-                "Month %d and year %d are after last valid model date: %s" %
-                (month, year, self._last_valid_date))
+        if (testdate < self._first_valid_date) or \
+           (testdate > self._last_valid_date):
+            return np.zeros_like(self._temperature[idx, :, :]).fill(np.nan)
 
         idx = self.get_time_index(month, year)
         assert idx >= 0
@@ -422,9 +417,24 @@ class CruAKtempMethod():
 
 
     def update_temperature_values(self):
-        """Update the temperature array values based on the current date"""
-        self.T_air = self.get_temperatures_month_year(self._current_date.month,
-                                                      self._current_date.year)
+        """Update the temperature array values based on the current date
+
+           This model now provides not just the "current" temperature
+           but also the previous monthly means for the this and the preceding
+           11 months, and the annual average for the last 12 months
+        """
+        year = self._current_date.year
+        month = self._current_date.month
+        day = self._current_date.month
+        self.T_air = self.get_temperatures_month_year(month, year)
+        self.T_air_prior_months = []
+
+        for monthnum in np.arange(-11, 1):
+            thisdate = self._current_date + relativedelta(months=monthnum)
+            self.T_air_prior_months.append(
+                self.get_temperatures_month_year(
+                    thisdate.month, thisdate.year))
+        self.T_air_prior_year = np.average(self.T_air_prior_months, axis=0)
 
     def read_config_file(self):
         # Open CFG file to read data
