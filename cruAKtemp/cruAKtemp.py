@@ -12,6 +12,7 @@ from .tests import examples_directory, data_directory
 import cruAKtemp
 import bmi_cruAKtemp
 import os
+import calendar
 import yaml
 from nose.tools import (assert_is_instance, assert_greater_equal,
                         assert_less_equal, assert_almost_equal,
@@ -22,6 +23,7 @@ from nose.tools import (assert_is_instance, assert_greater_equal,
 # Using netcdf4
 from netCDF4 import Dataset
 import datetime as dt
+from dateutil.relativedelta import relativedelta
 
 def assert_between(value, minval, maxval):
     """Fail if value is not between minval and maxval"""
@@ -45,6 +47,8 @@ class CruAKtempMethod():
         self._longitude = None # Will point to this model's longitude grid
         self._temperature = None # Will point to this model's temperature grid
         self.T_air = None        # Temperature grid
+        self.T_air_prior_months = None  # Temperature grid each prior 12 months
+        self.T_air_prior_year = None  # Temperature grid average prior 12 months
         self._time_units = "days"  # Timestep is in days
 
     def verify_config_for_uniform_rectilinear_run(self, cfg):
@@ -91,7 +95,7 @@ class CruAKtempMethod():
                         if var_name[-4:] == 'date':
                             # date variables end with "_date"
                             cfg_struct[var_name] = \
-                                dt.datetime.strptime(value, "%Y-%m-%d")
+                                dt.datetime.strptime(value, "%Y-%m-%d").date()
                                 #dt.datetime.strptime(value, "%Y-%m-%d").date()
                         elif var_name[0:4] == 'grid':
                             # grid variables are processed after cfg file read
@@ -202,6 +206,37 @@ class CruAKtempMethod():
                 assert_between(j, 0, self._grid_shape[1]-1)
             return j
 
+    def get_first_last_dates_from_nc(self):
+        try:
+            nc_time_var = self._cru_temperature_ncfile.variables['time']
+            nc_time_units = nc_time_var.getncattr('time_units').split()
+            for part in nc_time_units:
+                try:
+                    # If we get a datestring of YYYY-MM-DD, parse it
+                    reference_time = \
+                            dt.datetime.strptime(part, '%Y-%m-%d').date()
+
+                    # First valid day is first day of month of first_date
+                    days_to_first_day = dt.timedelta(days=int(nc_time_var[0]))
+                    start_date = reference_time + days_to_first_day
+                    self._first_valid_date = \
+                            dt.date(start_date.year, start_date.month, 1)
+
+                    # Last valid day is last day of month of last_date
+                    num_days = len(nc_time_var)
+                    days_to_last_day = \
+                        dt.timedelta(days=int(nc_time_var[num_days-1]))
+                    last_date = reference_time + days_to_last_day
+                    day = calendar.monthrange(last_date.year,
+                                              last_date.month)[1]
+                    self._last_valid_date = \
+                            dt.date(last_date.year, last_date.month, day)
+                    break
+                except:
+                    pass
+        except:
+            raise
+
     def initialize_from_config_file(self, cfg_filename=None):
         self.status     = 'initializing'
         cfg_struct = None
@@ -222,6 +257,11 @@ class CruAKtempMethod():
         self._cru_temperature_nc_filename = \
                 self.verify_temperature_netcdf_for_region_resolution(cfg_struct)
 
+        # Open the netcdf files
+        self._cru_temperature_ncfile = \
+            Dataset(self._cru_temperature_nc_filename, 'r', mmap=True)
+        assert_true(self._cru_temperature_ncfile is not None)
+
         # Initialize the time variables
         try:
             # From config
@@ -231,8 +271,12 @@ class CruAKtempMethod():
             if self._date_at_timestep0 is None:
                 self._date_at_timestep0 = self.first_date
             self.last_date = cfg_struct['model_end_date']
-            self._first_valid_date = cfg_struct['dataset_start_date']
-            self._last_valid_date = cfg_struct['dataset_end_date']
+            ### CALL FUNCTION, DONT READ FROM STRUCT
+            #HERE
+            self.get_first_last_dates_from_nc()
+            #self._first_valid_date = cfg_struct['dataset_start_date']
+            #self._last_valid_date = cfg_struct['dataset_end_date']
+            #HERE
 
             # Ensure that model dates are okay
             assert_between(self._date_at_timestep0,
@@ -258,11 +302,6 @@ class CruAKtempMethod():
                     (g, self._grid_shape, cfg_struct['grids'][g])
                     #(g, cfg_struct['grid_shape'], cfg_struct['grids'][g])
             exec(grid_assignment_string)
-
-        # Open the netcdf files
-        self._cru_temperature_ncfile = \
-            Dataset(self._cru_temperature_nc_filename, 'r', mmap=True)
-        assert_true(self._cru_temperature_ncfile is not None)
 
         # Set the netcdf offset arrays
         # This should eventually be done non-manually
@@ -352,22 +391,50 @@ class CruAKtempMethod():
         self.increment_date()
         self.update_temperature_values()
 
+    def get_time_index(self, month, year):
+        """ Return the index of the time coordinate of the netcdf file
+            for a specified month and year """
+        return month + 12 * (year - self._first_valid_date.year) - 1
+
+    def get_temperatures_month_year(self, month, year):
+        """ Return the temperature field at specified month, year """
+        # Check for valid month, year
+        try:
+            testdate = dt.date(year, month, 1)
+        except:
+            raise ValueError("Month (%d) and Year (%d) can't be made a date"
+                             % (month, year))
+
+        testdate = dt.date(year, month, 1)
+        # Check that month, year are in range
+        if (testdate < self._first_valid_date) or \
+           (testdate > self._last_valid_date):
+            return np.zeros_like(self._temperature[idx, :, :]).fill(np.nan)
+
+        idx = self.get_time_index(month, year)
+        assert idx >= 0
+        return self._temperature[idx, :, :]
+
+
     def update_temperature_values(self):
-        """Update the temperature array values based on the current date"""
-        # Note: in the future, we may want to do this from an open handle
-        # to the netcdf file instead of from the 'fully read-in'
-        # _temperature grid
+        """Update the temperature array values based on the current date
 
-        # For the cru temperature grid, the first time corresponds to dates
-        # in January, 1901
-        model_year0 = 1901
+           This model now provides not just the "current" temperature
+           but also the previous monthly means for the this and the preceding
+           11 months, and the annual average for the last 12 months
+        """
+        year = self._current_date.year
+        month = self._current_date.month
+        day = self._current_date.month
+        self.T_air = self.get_temperatures_month_year(month, year)
+        self.T_air_prior_months = []
 
-        current_year = self._current_date.year
-        current_month = self._current_date.month
-
-        this_index = current_month + 12 *(current_year - model_year0) - 1
-
-        self.T_air = self._temperature[this_index, :, :]
+        for monthnum in np.arange(-11, 1):
+            thisdate = self._current_date + relativedelta(months=monthnum)
+            self.T_air_prior_months.append(
+                self.get_temperatures_month_year(
+                    thisdate.month, thisdate.year))
+        self.T_air_prior_year = np.average(self.T_air_prior_months, axis=0)
 
     def read_config_file(self):
         # Open CFG file to read data

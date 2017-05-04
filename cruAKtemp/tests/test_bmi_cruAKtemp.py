@@ -30,7 +30,7 @@ def test_initialize_sets_times():
     # Can we call an initialize function?
     ct = cruAKtemp.bmi_cruAKtemp.BmiCruAKtempMethod()
     ct.initialize(cfg_file=default_config_filename)
-    assert_equal(ct._model.first_date, datetime.datetime(1902, 1, 1))
+    assert_equal(ct._model.first_date, datetime.date(1902, 1, 1))
 
 def test_att_map():
     ct = cruAKtemp.bmi_cruAKtemp.BmiCruAKtempMethod()
@@ -49,7 +49,9 @@ def test_get_output_var_names():
     ct = cruAKtemp.bmi_cruAKtemp.BmiCruAKtempMethod()
     ct.initialize(cfg_file=default_config_filename)
     output_vars = ct.get_output_var_names()
-    output_list = ('atmosphere_bottom_air__temperature',)
+    output_list = ('atmosphere_bottom_air__temperature',
+                   'atmosphere_bottom_air__temperature_months',
+                   'atmosphere_bottom_air__temperature_year')
     # In the future, we may include the start and end datetimes as outputs
     #output_list = ('atmosphere_bottom_air__temperature', 'datetime__start',
     #               'datetime__end')
