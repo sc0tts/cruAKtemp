@@ -22,18 +22,6 @@ run_resolution:
     type: string
     default: lowres
     units: '-'
-dataset_start_date:
-  description: First day with valid data in dataset
-  value:
-    type: string
-    default: '1901-01-01'
-    units: '-'
-dataset_end_date:
-  description: Last day with valid data in dataset
-  value:
-    type: string
-    default: '2009-12-31'
-    units: '-'
 reference_date:
   description: Model time is relative to this date
   value:
