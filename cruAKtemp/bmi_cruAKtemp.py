@@ -256,4 +256,4 @@ class BmiCruAKtempMethod():
             return int(np.prod(grid_size))
 
     def get_grid_rank(self, var_id):
-        return len(self.get_grid_shape(self.get_var_grid(var_id)))
+        return len(self.get_grid_shape(var_id))
