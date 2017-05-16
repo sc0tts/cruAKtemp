@@ -146,6 +146,9 @@ class CruAKtempMethod(object):
                         elif var_type == 'int':
                             # Convert integers to int
                             cfg_struct[var_name] = int(value)
+                        elif var_type == 'long':
+                            # Convert longs to int
+                            cfg_struct[var_name] = int(value)
                         else:
                             # Everything else is just passed as a string
                             cfg_struct[var_name] = value
