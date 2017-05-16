@@ -255,6 +255,6 @@ if __name__ == "__main__":
     print("  (Starting at Panoply's (51, 26) which is (50, 25) in ")
     print("     0-based notation")
     print(crumeth._values['atmosphere_bottom_air__temperature'])
-    print("Current timestep (should be 2): %s" %
+    print("Current timestep (should be 1): %s" %
           str(crumeth.get_current_time()))
     crumeth.finalize()
