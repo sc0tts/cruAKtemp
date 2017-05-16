@@ -93,6 +93,26 @@ class CruAKtempMethod(object):
                   str(cfg['grid_shape']))
             raise
 
+    def verify_config_for_rectilinear_run(self, cfg):
+        # Need at least one grid
+        assert_greater_equal(len(cfg['grids']), 1)
+
+        # All grids need a valid data type
+        # name is a string, type is a type
+        for k, v in cfg['grids'].iteritems():
+            assert_true(isinstance(k, str))
+            assert_true(isinstance(type(v), type))
+
+        # Grid shape can be used to create a numpy array
+        assert_true(isinstance(cfg['grid_shape'], tuple))
+        try:
+            test_array = np.zeros(cfg['grid_shape'], dtype=np.uint8)
+            assert_true(test_array is not None)
+        except:
+            print("Grid shape can't be used for numpy array: %s" % \
+                  str(cfg['grid_shape']))
+            raise
+
     def get_config_from_oldstyle_file(self, cfg_filename):
         cfg_struct = {}
         grid_struct = {}
