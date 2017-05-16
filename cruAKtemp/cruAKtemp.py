@@ -5,41 +5,37 @@ cruAKtemp.py
 Reads average monthly temperature in Alaska from an upscaled version of
 CRU NCEP data for Alaska
 """
+from  __future__ import print_function
 
+import calendar
+import os
+import datetime as dt
+import yaml
+# Using netcdf3
+# from scipy.io.netcdf import NetCDFFile as Dataset
+# Using netcdf4
+from netCDF4 import Dataset
+from dateutil.relativedelta import relativedelta
 import numpy as np
 #from cruAKtemp.tests import examples_directory, data_directory
 from .tests import examples_directory, data_directory
-import cruAKtemp
-import bmi_cruAKtemp
-import os
-import calendar
-import yaml
-from nose.tools import (assert_is_instance, assert_greater_equal,
-                        assert_less_equal, assert_almost_equal,
-                        assert_greater, assert_in, assert_true,
-                        assert_equal)
-# Using netcdf3
-#from scipy.io.netcdf import NetCDFFile as Dataset
-# Using netcdf4
-from netCDF4 import Dataset
-import datetime as dt
-from dateutil.relativedelta import relativedelta
+from nose.tools import (assert_greater_equal, assert_less_equal,
+                        assert_true)
 
 def assert_between(value, minval, maxval):
     """Fail if value is not between minval and maxval"""
     assert_greater_equal(value, minval)
     assert_less_equal(value, maxval)
 
-class CruAKtempMethod():
+class CruAKtempMethod(object):
     def __init__(self):
         self._cru_temperature_nc_filename = None  # Name of input netcdf file
         self._cru_temperature_nc_filename_default = \
                 os.path.join(data_directory, "cruAKtemp.nc")
                                 # Default name of input netcdf file
-        self._cru_temperature_ncfile = None       # netCDF file handle
+        self._cru_temperature_ncfile = Dataset       # netCDF file handle
         self._cru_temperature = None # This will point to the nc file data
         self._current_date = None # Current num days since _start_date
-        self._status = None       # Current state of the model
         self._start_date = None   # Real date of start of model run
         self._end_date = None     # Date on which model run ends
         self._date_at_timestep0 = None  # this could be overwritten with set()
@@ -50,6 +46,29 @@ class CruAKtempMethod():
         self.T_air_prior_months = None  # Temperature grid each prior 12 months
         self.T_air_prior_year = None  # Temperature grid average prior 12 months
         self._time_units = "days"  # Timestep is in days
+
+        # The following are defined in config file
+        self.cfg_file = ""
+        self._nc_xdim = 0
+        self._nc_ydim = 0
+        self._nc_tdim = 0
+        self._nc_i0 = 0
+        self._nc_j0 = 0
+        self._nc_i1 = 0
+        self._nc_j1 = 0
+        self._nc_iskip = 0
+        self._nc_jskip = 0
+        self._first_valid_date = dt.date(2000, 1, 1)
+        self._last_valid_date = dt.date(1900, 1, 1)
+        self._timestep = dt.timedelta(days=1)
+        self._current_timestep = 0.0
+        self._first_timestep = 0.0
+        self._last_timestep = 0.0
+        self.first_date = dt.date(1900, 1, 1)
+        self.last_date = dt.date(1900, 1, 1)
+        self._grid_shape = (1, 1)
+        self.case_prefix = ""
+        self.site_prefix = ""
 
     def verify_config_for_uniform_rectilinear_run(self, cfg):
         # Need at least one grid
@@ -65,6 +84,7 @@ class CruAKtempMethod():
         assert_true(isinstance(cfg['grid_shape'], tuple))
         try:
             test_array = np.zeros(cfg['grid_shape'], dtype=np.uint8)
+            assert_true(test_array is not None)
         except:
             print("Grid shape can't be used for numpy array: %s" % \
                   str(cfg['grid_shape']))
@@ -86,7 +106,7 @@ class CruAKtempMethod():
                     COMMENT = (line[0] == '#')
 
                     words = line.split('|')
-                    if (len(words) ==4) and (not COMMENT):
+                    if (len(words) == 4) and (not COMMENT):
                         var_name = words[0].strip()
                         value = words[1].strip()
                         var_type = words[2].strip()
@@ -141,14 +161,14 @@ class CruAKtempMethod():
         # routine for each type of grid
         try:
             exec("self.verify_config_for_%s_run(cfg_struct)" %
-                cfg_struct['grid_type'])
+                 cfg_struct['grid_type'])
         except:
             raise
 
     def verify_temperature_netcdf_for_region_resolution(self, cfg_struct):
         try:
-            if 'lowres' == cfg_struct['run_resolution'] and \
-            'Alaska' == cfg_struct['run_region']:
+            if cfg_struct['run_resolution'] == 'lowres'  and \
+                cfg_struct['run_region'] == 'Alaska':
                 return os.path.join(data_directory,
                                     'cru_alaska_lowres_temperature.nc')
         except:
@@ -178,7 +198,7 @@ class CruAKtempMethod():
             i_nc = i
             if check_bounds:
                 assert_between(i_nc, 0, self._nc_xdim)
-            i = (i_nc - self.nc_i0)/self._nc_iskip
+            i = (i_nc - self._nc_i0)/self._nc_iskip
             if check_bounds:
                 assert_between(i, 0, self._grid_shape[0]-1)
             return i
@@ -201,7 +221,7 @@ class CruAKtempMethod():
             j_nc = j
             if check_bounds:
                 assert_between(j_nc, 0, self._nc_ydim)
-            j = (j_nc - self.nc_j0)/self._nc_jskip
+            j = (j_nc - self._nc_j0)/self._nc_jskip
             if check_bounds:
                 assert_between(j, 0, self._grid_shape[1]-1)
             return j
@@ -211,6 +231,8 @@ class CruAKtempMethod():
             nc_time_var = self._cru_temperature_ncfile.variables['time']
             nc_time_units = nc_time_var.getncattr('time_units').split()
             for part in nc_time_units:
+                # Most of these "part"s will fail,
+                # but the 'time_units' value will execute the try clause
                 try:
                     # If we get a datestring of YYYY-MM-DD, parse it
                     reference_time = \
@@ -232,20 +254,20 @@ class CruAKtempMethod():
                     self._last_valid_date = \
                             dt.date(last_date.year, last_date.month, day)
                     break
-                except:
+                except ValueError:
+                    # Expect most 'parts' of nc_time_units not to be date
                     pass
         except:
             raise
 
     def initialize_from_config_file(self, cfg_filename=None):
-        self.status     = 'initializing'
         cfg_struct = None
 
         # Set the cfg file if it exists, otherwise, a default
         if not cfg_filename:
-           # No config file specified, use a default
-           cfg_filename = os.path.join(examples_directory,
-                                   'default_temperature.cfg')
+            # No config file specified, use a default
+            cfg_filename = os.path.join(examples_directory,
+                                        'default_temperature.cfg')
 
         #cfg_struct = self.get_config_from_yaml_file(cfg_filename)
         cfg_struct = self.get_config_from_oldstyle_file(cfg_filename)
@@ -323,12 +345,16 @@ class CruAKtempMethod():
         # Read in the latitude and longitude arrays
         nc_latitude = self._cru_temperature_ncfile.variables['lat']
         self._latitude = \
-            np.asarray(nc_latitude[self._nc_j0:self._nc_j1:self._nc_jskip,
-            self._nc_i0:self._nc_i1:self._nc_iskip]).astype(np.float32)
+            np.asarray(
+                nc_latitude[
+                    self._nc_j0:self._nc_j1:self._nc_jskip,
+                    self._nc_i0:self._nc_i1:self._nc_iskip]).astype(np.float32)
         nc_longitude = self._cru_temperature_ncfile.variables['lon']
         self._longitude = \
-            np.asarray(nc_longitude[self._nc_j0:self._nc_j1:self._nc_jskip,
-            self._nc_i0:self._nc_i1:self._nc_iskip]).astype(np.float32)
+            np.asarray(
+                nc_longitude[
+                    self._nc_j0:self._nc_j1:self._nc_jskip,
+                    self._nc_i0:self._nc_i1:self._nc_iskip]).astype(np.float32)
 
         # If the variables that point to the netcdfile's variables
         # aren't independently closed, then a RuntimeWarning will be raised
@@ -342,9 +368,10 @@ class CruAKtempMethod():
         # the best way to read from files that are several GB in size
         nc_temperature = self._cru_temperature_ncfile.variables['temp']
         self._temperature = \
-            np.asarray(nc_temperature[:,
-            self._nc_j0:self._nc_j1:self._nc_jskip,
-            self._nc_i0:self._nc_i1:self._nc_iskip]).astype(np.float32)
+            np.asarray(
+                nc_temperature[
+                    :, self._nc_j0:self._nc_j1:self._nc_jskip,
+                    self._nc_i0:self._nc_i1:self._nc_iskip]).astype(np.float32)
         # Deduce the model xdim and ydim from the size of this array
         self._nc_tdim = nc_temperature.shape[0]
         self._nc_ydim = nc_temperature.shape[1]
@@ -366,7 +393,7 @@ class CruAKtempMethod():
         """Return the timestep from a date
         Note: assumes that the model's time values have been initialized
         """
-        this_timestep  = (this_date - self._date_at_timestep0).days / \
+        this_timestep = (this_date - self._date_at_timestep0).days / \
                     self._timestep.days
         return this_timestep
 
@@ -407,12 +434,12 @@ class CruAKtempMethod():
 
         testdate = dt.date(year, month, 1)
         # Check that month, year are in range
+        idx = self.get_time_index(month, year)
+        assert idx >= 0
         if (testdate < self._first_valid_date) or \
            (testdate > self._last_valid_date):
             return np.zeros_like(self._temperature[idx, :, :]).fill(np.nan)
 
-        idx = self.get_time_index(month, year)
-        assert idx >= 0
         return self._temperature[idx, :, :]
 
 
@@ -425,7 +452,6 @@ class CruAKtempMethod():
         """
         year = self._current_date.year
         month = self._current_date.month
-        day = self._current_date.month
         self.T_air = self.get_temperatures_month_year(month, year)
         self.T_air_prior_months = []
 
@@ -438,35 +464,35 @@ class CruAKtempMethod():
 
     def read_config_file(self):
         # Open CFG file to read data
-        cfg_unit = open( self.cfg_file, 'r' )
+        cfg_unit = open(self.cfg_file, 'r')
         last_var_name = ''
 
-        while (True):
-            line  = cfg_unit.readline()
-            if (line == ''):
+        while True:
+            line = cfg_unit.readline()
+            if line == '':
                 break                  # (reached end of file)
 
             # Comments are lines that start with '#'
             COMMENT = (line[0] == '#')
 
             # Columns are delimited by '|'
-            words   = line.split('|')
+            words = line.split('|')
 
             # Only process non-comment lines with exactly 4 words
             # Note: the 4th word describes the variable, and is ignored
-            if (len(words) == 4) and not(COMMENT):
+            if (len(words) == 4) and not COMMENT:
                 var_name = words[0].strip()
-                value    = words[1].strip()
+                value = words[1].strip()
                 var_type = words[2].strip()
 
-                READ_SCALAR   = False
+                READ_SCALAR = False
                 READ_FILENAME = False
 
                 # Does var_name end with an array subscript ?
                 p1 = var_name.rfind('[')
                 p2 = var_name.rfind(']')
                 if (p1 > 0) and (p2 > p1):
-                    var_base  = var_name[:p1]
+                    var_base = var_name[:p1]
                     subscript = var_name[p1:p2+1]
                     var_name_file_str = var_base + '_file' + subscript
                 else:
@@ -475,13 +501,14 @@ class CruAKtempMethod():
 
                 # if the immediately preceding line describes this variables's
                 # type, change the type of this variable
-                if (last_var_name.startswith(var_base + '_type')):
-                    exec( "type_choice = self." + last_var_name )
-                    if (type_choice.lower() == 'scalar'):
-                        exec( "self." + var_name_file_str + " = ''")
+                if last_var_name.startswith(var_base + '_type'):
+                    type_choice = "undefined"
+                    exec("type_choice = self." + last_var_name)
+                    if type_choice.lower() == 'scalar':
+                        exec("self." + var_name_file_str + " = ''")
                         READ_SCALAR = True
                     else:
-                        exec( "self." + var_name + " = 0.0")
+                        exec("self." + var_name + " = 0.0")
                         READ_FILENAME = True
 
                 #-----------------------------------
@@ -490,54 +517,56 @@ class CruAKtempMethod():
                 # Convert scalars to numpy scalars
                 #-----------------------------------
                 if (var_type in ['float64', 'np.float64']):
-                    value = np.float64( value )
-                    exec( "self." + var_name + " = value" )
+                    value = np.float64(value)
+                    exec("self." + var_name + " = value")
                 elif (var_type in ['float32', 'np.float32']):
-                    value = np.float32( value )
-                    exec( "self." + var_name + " = value" )
+                    value = np.float32(value)
+                    exec("self." + var_name + " = value")
                 elif (var_type in ['long', 'long int', 'np.int64']):
-                    value = np.int64( value )
-                    exec( "self." + var_name + " = value" )
+                    value = np.int64(value)
+                    exec("self." + var_name + " = value")
                 elif (var_type in ['int', 'np.int32']):
-                    value = np.int32( value )
-                    exec( "self." + var_name + " = value" )
+                    value = np.int32(value)
+                    exec("self." + var_name + " = value")
                 elif (var_type in ['short', 'short int', 'int16', 'np.int16']):
-                    value = np.int16( value )
-                    exec( "self." + var_name + " = value" )
-                elif (var_type == 'string'):
+                    value = np.int16(value)
+                    exec("self." + var_name + " = value")
+                elif var_type == 'string':
                     # Replace [case_prefix] or [site_prefix] in a string's value
                     # with the appropriate values
                     case_str = '[case_prefix]'
                     site_str = '[site_prefix]'
                     s = value
-                    if (s[:13] == case_str):
+                    if s[:13] == case_str:
                         value_str = (self.case_prefix + s[13:])
-                    elif (s[:13] == site_str):
+                    elif s[:13] == site_str:
                         value_str = (self.site_prefix  + s[13:])
                     else:
                         value_str = s
 
+                    assert value_str is not None
+
                     # If var_name starts with "SAVE_" and value is
                     # Yes or No, then convert to Python boolean.
-                    if (var_name[:5] == 'SAVE_'):
+                    if var_name[:5] == 'SAVE_':
                         VALUE_SET = True
                         if (s.lower() in ['yes', 'true']):
-                            exec( "self." + var_name + " = True" )
+                            exec("self." + var_name + " = True")
                         elif (s.lower() in ['no', 'false']):
-                            exec( "self." + var_name + " = False" )
+                            exec("self." + var_name + " = False")
                         else:
                             VALUE_SET = False
                     else:
                         VALUE_SET = False
 
                     # If string wasn't a SAVE_ variable, set it here
-                    if not(VALUE_SET):
-                        if (READ_FILENAME):
-                            exec( "self." + var_name_file_str + " = value_str" )
-                        elif (READ_SCALAR):
-                            exec( "self." + var_name + " = np.float64(value_str)")
+                    if not VALUE_SET:
+                        if READ_FILENAME:
+                            exec("self." + var_name_file_str + " = value_str")
+                        elif READ_SCALAR:
+                            exec("self." + var_name + " = np.float64(value_str)")
                         else:
-                            exec( "self." + var_name + " = value_str" )
+                            exec("self." + var_name + " = value_str")
                 else:
                     raise ValueError(\
                         "In read_config_file(), unsupported data type: %d" \
