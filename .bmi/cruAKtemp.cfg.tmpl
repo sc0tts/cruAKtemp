@@ -7,9 +7,9 @@ run_description     | {run_description}      | string   | description of this co
 run_region          | {run_region}           | string   | general location of this domain
 run_resolution      | {run_resolution}       | string   | highres or lowres
 # Model first, last, step [years]
-model_start_year    | {model_start_year}     | int      | first year of model run
-model_end_year      | {model_start_year}     | int      | last year of model run
-timestep            | {timestep}             | int      | model timestep [days]
+model_start_year    | {model_start_year}     | long     | first year of model run
+model_end_year      | {model_end_year}       | long     | last year of model run
+timestep            | {timestep}             | int      | model timestep [yr]
 # Grid variables are processed separately after all config variables have been read in
 # need to create np.float array of grids
 grid_name           | {grid_name}            | string   | name of the model grid

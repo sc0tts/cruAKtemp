@@ -28,18 +28,18 @@ reference_date:
     type: string
     default: '1900-01-01'
     units: '-'
-model_start_date:
-  description: First day with valid model data
+model_start_year:
+  description: First year with valid model data
   value:
-    type: string
-    default: '1902-01-01'
-    units: '-'
-model_end_date:
-  description: Last day with valid model data
+    type: long
+    default: 1902
+    units: yr
+model_end_year:
+  description: Last year with valid model data
   value:
-    type: string
-    default: '1910-12-31'
-    units: '-'
+    type: long
+    default: 1910
+    units: yr
 grid_name:
   description: Name of the model grid
   value:
@@ -81,4 +81,4 @@ timestep:
   value:
     type: int
     default: 1
-    units: 'days'
+    units: yr
