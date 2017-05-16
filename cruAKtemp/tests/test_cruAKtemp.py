@@ -3,13 +3,7 @@ test_cruAKtemp.py
   tests of the cruAKtemp component of permamodel
 """
 
-#from permamodel.components import frost_number
-#from permamodel.components import bmi_frost_number
-#from cruAKtemp import *
-#import cruAKtemp.cruAKtemp as cruAKtemp
 import cruAKtemp
-import cruAKtemp.cruAKtemp_utils as cu
-#from .cruAKtemp_utils import *
 import os
 import numpy as np
 from ..tests import data_directory, examples_directory
@@ -18,6 +12,7 @@ from nose.tools import (assert_is_instance, assert_greater_equal,
                         assert_greater, assert_in, assert_true,
                         assert_equal)
 import datetime
+from dateutil.relativedelta import relativedelta
 
 
 # ---------------------------------------------------
@@ -62,13 +57,13 @@ def test_get_timestep_from_date():
     this_timestep = 0
     assert_equal(this_timestep, ct._current_timestep)
 
-    # Adding 100 days should make the current timestep 100
-    number_of_days = 100
-    this_timedelta = datetime.timedelta(days=number_of_days)
-    ct.increment_date(this_timedelta)
-    assert_equal(this_timestep+number_of_days, ct._current_timestep)
+    # Adding 10 years should make the current timestep 10
+    number_of_years = 10
+    ct.increment_date(number_of_years)
+    assert_equal(10, ct._current_timestep)
 
-    #...and make the date 100 days later
+    #...and make the date 10 days later
+    this_timedelta = relativedelta(years=number_of_years)
     assert_equal(ct.first_date+this_timedelta, ct._current_date)
 
 def test_time_index_yields_correct_values():
@@ -127,29 +122,42 @@ def test_getting_monthly_annual_temp_values():
     ct.initialize_from_config_file()
 
     # Test prior months values
-    actualvalues = [-28.700001, -24.799999, -16.600000, -2.700000,
-                     7.800000, 11.000000, 7.100000, -0.300000,
-                    -13.400000, -22.100000, -26.500000, -25.700001]
+    # These are values starting from 2/1901
+    #actualvalues = [-28.700001, -24.799999, -16.600000, -2.700000,
+    #                 7.800000, 11.000000, 7.100000, -0.300000,
+    #                -13.400000, -22.100000, -26.500000, -25.700001]
+    #actualmean = -11.241668
+
+    # These values start with 1/1902
+    actualvalues = [-25.7, -27.0, -26.6, -16.9, -2.8, 8.1,
+                    11.4, 7.3, -0.3, -13.6, -22.1, -28.9]
+    actualmean = -11.425
+
     vallist = []
+
     for i in np.arange(0, 12):
         vallist.append(ct.T_air_prior_months[i][0, 0])
+
+    for i in np.arange(0, 12):
         assert_almost_equal(vallist[i], actualvalues[i], places=5)
 
     # Test prior year value
-    actualmean = -11.241668
     assert_almost_equal(ct.T_air_prior_year[0, 0], actualmean, places=5)
-
 
 def test_can_increment_to_end_of_run():
     """ Test that we can get values for last timestep """
     ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
     ct.initialize_from_config_file()
 
-    number_of_days = ct._last_timestep - ct._first_timestep
-    this_timedelta = datetime.timedelta(days=number_of_days)
-    ct.increment_date(this_timedelta)
+    number_of_years = ct._last_timestep - ct._first_timestep
+    ct.increment_date(number_of_years)
     ct.update_temperature_values()
     ct.T_air.tofile("end_T_air.dat")
     # Note: nc time of 4000 corresponds to model date of Dec 15, 2010
 
-
+def test_first_and_last_valid_dates():
+    """ Test that first and last valid dates are read from netcdf file """
+    ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
+    ct.initialize_from_config_file()
+    assert_equal(datetime.date(1901,1,1), ct._first_valid_date)
+    assert_equal(datetime.date(2009,12,31), ct._last_valid_date)

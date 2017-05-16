@@ -8,20 +8,20 @@ monthly temperature values for Alaska
 For use with Permamodel components
 
 """
+from __future__ import print_function
 
-import numpy as np
 import os
+import numpy as np
 import cruAKtemp
+from tests import examples_directory
 
 """
 class FrostnumberMethod( frost_number.BmiFrostnumberMethod ):
     _thisname = 'this name'
 """
 
-class BmiCruAKtempMethod():
-
-
-
+class BmiCruAKtempMethod(object):
+    """ Provides BMI interface to cruAKtemp netcdf file """
     def __init__(self):
         self._model = None
         self._values = {}
@@ -41,7 +41,7 @@ class BmiCruAKtempMethod():
             'comp_name':          'cruAKtemp',
             'model_family':       'PermaModel',
             'cfg_extension':      '_cruAKtemp_model.cfg',
-            'time_units':         'days' }
+            'time_units':         'days'}
 
         self._input_var_names = ()
 
@@ -74,11 +74,11 @@ class BmiCruAKtempMethod():
 
         # Verify that all input and output variable names are mapped
         for varname in self._input_var_names:
-            assert(varname in self._var_name_map)
-            assert(varname in self._var_units_map)
+            assert varname in self._var_name_map
+            assert varname in self._var_units_map
         for varname in self._output_var_names:
-            assert(varname in self._var_name_map)
-            assert(varname in self._var_units_map)
+            assert varname in self._var_name_map
+            assert varname in self._var_units_map
 
         # Set a unique grid number for each grid
         gridnumber = 0
@@ -91,26 +91,24 @@ class BmiCruAKtempMethod():
             self._grid_type[gridnumber] = 'uniform_rectilinear'
             gridnumber += 1
 
-        self._values = _values = {
-        # These are the links to the model's variables and
-        # should be consistent with _var_name_map
+        self._values = {
+            # These are the links to the model's variables and
+            # should be consistent with _var_name_map
             'atmosphere_bottom_air__temperature': self._model.T_air,
             'atmosphere_bottom_air__temperature_months': self._model.T_air_prior_months,
             'atmosphere_bottom_air__temperature_year': self._model.T_air_prior_year,
             'datetime__start':                    self._model.first_date,
             'datetime__end':                      self._model.last_date}
 
-        self._model.status = 'initialized'
-
     def get_attribute(self, att_name):
 
         try:
-            return self._att_map[ att_name.lower() ]
-        except:
-            print '###################################################'
-            print ' ERROR: Could not find attribute: ' + att_name
-            print '###################################################'
-            print ' '
+            return self._att_map[att_name.lower()]
+        except KeyError:
+            print('###################################################')
+            print(' ERROR: Could not find attribute: %s' % str(att_name))
+            print('###################################################')
+            print(' ')
 
     def get_input_var_names(self):
         return self._input_var_names
@@ -123,10 +121,10 @@ class BmiCruAKtempMethod():
         return np.float64(0)
 
     def get_var_name(self, long_var_name):
-        return self._var_name_map[ long_var_name ]
+        return self._var_name_map[long_var_name]
 
     def get_var_units(self, long_var_name):
-        return self._var_units_map[ long_var_name ]
+        return self._var_units_map[long_var_name]
 
     def get_current_time(self):
         return self._model.get_current_timestep()
@@ -156,8 +154,10 @@ class BmiCruAKtempMethod():
         only be called if the integer value of the day changes
         """
         self._model.increment_date(
-            change_amount=time_fraction * self._model._timestep)
+            change_amount=time_fraction * self._model._timestep_duration)
         self._model.update_temperature_values()
+
+        self._model.update(frac=time_fraction)
         self._values['atmosphere_bottom_air__temperature'] = \
                 self._model.T_air
         self._values['atmosphere_bottom_air__temperature_months'] = \
@@ -166,38 +166,24 @@ class BmiCruAKtempMethod():
                 self._model.T_air_prior_year
 
     def update_until(self, stop_date):
-        if stop_date < self._model.current_date:
+        if stop_date < self._model._current_date:
             print("Warning: update_until date--%d--is less than current\
-                  date--%d" % (stop_date, self._model.current_date))
+                  date--%d" % (stop_date, self._model._current_date))
             print("  no update run")
             return
 
-        if stop_date > self._model._end_date:
+        if stop_date > self._model.last_date:
             print("Warning: update_until date--%d" % stop_date)
-            print("  was greater than end_date--%d." % self._model._end_date)
-            print("  Setting stop_date to _end_date")
-            stop_date = self._end_date
+            print("  was greater than end_date--%d." % self._model.last_date)
+            print("  Setting stop_date to last_date")
+            stop_date = self._model.last_date
 
         # Run update() one timestep at a time until stop_date
-        date = self._model.current_date
-        while date < stop_date:
+        while self._model._current_date < stop_date:
             self.update()
-            date = self._model.current_date
 
     def finalize(self):
-        SILENT = True
-
-        self._model.status = 'finalizing'
-
-        self._model.close_input_files()
-        self._model.write_output_to_file(SILENT=True)
-        self._model.close_output_files()
-
-        self._model.status = 'finalized'
-
-        if not SILENT:
-            self._model.print_final_report(\
-                    comp_name='Permamodel CruAKtemp component')
+        pass
 
     def get_grid_type(self, grid_number):
         return self._grid_type[grid_number]
@@ -206,7 +192,7 @@ class BmiCruAKtempMethod():
         # Model keeps track of timestep as a timedelta
         # Here, find the seconds and divide by seconds/day
         # to get the number of days
-        return self._model._timestep.total_seconds()/(24*60*60.0)
+        return self._model._timestep_duration
 
     def get_value_ref(self, var_name):
         return self._values[var_name]
@@ -228,7 +214,6 @@ class BmiCruAKtempMethod():
 
     def get_value(self, var_name):
         return np.asarray(self.get_value_ref(var_name))
-
 
     def get_var_type(self, var_name):
         return str(self.get_value_ref(var_name).dtype)
@@ -255,5 +240,29 @@ class BmiCruAKtempMethod():
         else:
             return int(np.prod(grid_size))
 
+    # Todo: Revise once we can work with georeferenced data in the CMF.
+    def get_grid_spacing(self, grid_id):
+        return np.array([10000.0, 10000.0], dtype='float32')
+
+    # Todo: Revise once we can work with georeferenced data in the CMF.
+    def get_grid_origin(self, grid_id):
+        return np.array([0.0, 0.0], dtype='float32')
+
     def get_grid_rank(self, var_id):
         return len(self.get_grid_shape(var_id))
+
+
+if __name__ == "__main__":
+    # Execute standalone test run
+    crumeth = BmiCruAKtempMethod()
+    crumeth.initialize(cfg_file=os.path.join(examples_directory,
+                                             'default_temperature.cfg'))
+    crumeth.update()
+    print("After one timestep, value of temperature array:")
+    print("  (This should be cruAKtemp for Dec 1903 (index=36 in Panoply)")
+    print("  (Starting at Panoply's (51, 26) which is (50, 25) in ")
+    print("     0-based notation")
+    print(crumeth._values['atmosphere_bottom_air__temperature'])
+    print("Current timestep (should be 1): %s" %
+          str(crumeth.get_current_time()))
+    crumeth.finalize()
