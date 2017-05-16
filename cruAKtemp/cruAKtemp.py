@@ -44,7 +44,8 @@ class CruAKtempMethod(object):
         self.T_air = None        # Temperature grid
         self.T_air_prior_months = None  # Temperature grid each prior 12 months
         self.T_air_prior_year = None  # Temperature grid average prior 12 months
-        self._time_units = "days"  # Timestep is in days
+        self._time_units = "years"  # Timestep is in years
+        self._timestep_duration = 0
 
         # The following are defined in config file
         self.cfg_file = ""
@@ -59,7 +60,6 @@ class CruAKtempMethod(object):
         self._nc_jskip = 0
         self._first_valid_date = dt.date(2000, 1, 1)
         self._last_valid_date = dt.date(1900, 1, 1)
-        self._timestep = dt.timedelta(days=1)
         self._current_timestep = 0.0
         self._first_timestep = 0.0
         self._last_timestep = 0.0
@@ -68,6 +68,10 @@ class CruAKtempMethod(object):
         self._grid_shape = (1, 1)
         self.case_prefix = ""
         self.site_prefix = ""
+
+        # Month day for 'canonical' date-of-year
+        self.month = 12
+        self.day = 15
 
     def verify_config_for_uniform_rectilinear_run(self, cfg):
         # Need at least one grid
@@ -119,9 +123,8 @@ class CruAKtempMethod(object):
                             # grid variables are processed after cfg file read
                             grid_struct[var_name] = value
                         elif var_name == 'timestep':
-                            # timestep is a timedelta object
-                            cfg_struct[var_name] = \
-                                dt.timedelta(days=int(value))
+                            # timestep is now a number of years
+                            cfg_struct[var_name] = int(value)
                         elif var_type == 'int':
                             # Convert integers to int
                             cfg_struct[var_name] = int(value)
@@ -133,6 +136,14 @@ class CruAKtempMethod(object):
             print("\nError opening configuration file in\
                   initialize_from_config_file()")
             raise
+
+        '''
+        print(" ")
+        for key in cfg_struct.keys():
+            print("%s: %s" % (str(key), str(cfg_struct[key])))
+
+        exit(0)
+        '''
 
         # After reading the files, process the grid_struct values
         cfg_struct['grid_shape'] = (int(grid_struct['grid_columns']),
@@ -285,13 +296,20 @@ class CruAKtempMethod(object):
         # Initialize the time variables
         try:
             # From config
-            self._timestep = cfg_struct['timestep']
-            self.first_date = cfg_struct['model_start_date']
+            self._timestep_duration = cfg_struct['timestep']
 
+            # first_date and last_date are years from cfg file
+            # self.first_date = cfg_struct['model_start_date']
+            self.first_date = dt.date(cfg_struct['model_start_year'],
+                                      self.month, self.day)
             # This could be set externally, eg by WMT
             if self._date_at_timestep0 is None:
                 self._date_at_timestep0 = self.first_date
-            self.last_date = cfg_struct['model_end_date']
+
+            #self.last_date = cfg_struct['model_end_date']
+            self.last_date = dt.date(cfg_struct['model_end_year'],
+                                     self.month, self.day)
+
             self.get_first_last_dates_from_nc()
 
             # Ensure that model dates are okay
@@ -386,9 +404,9 @@ class CruAKtempMethod(object):
     def timestep_from_date(self, this_date):
         """Return the timestep from a date
         Note: assumes that the model's time values have been initialized
+        Note: this may be inaccurate if partial timesteps (year) are used
         """
-        this_timestep = (this_date - self._date_at_timestep0).days / \
-                    self._timestep.days
+        this_timestep = this_date.year - self._date_at_timestep0.year
         return this_timestep
 
     def increment_date(self, change_amount=None):
@@ -396,9 +414,9 @@ class CruAKtempMethod(object):
         and update the timestep to reflect that change
         """
         if change_amount is None:
-            change_amount = self._timestep
+            change_amount = self._timestep_duration
 
-        self._current_date += change_amount
+        self._current_date += relativedelta(years=change_amount)
         self._current_timestep = self.timestep_from_date(self._current_date)
 
     def get_current_timestep(self):
