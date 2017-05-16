@@ -17,7 +17,6 @@ import yaml
 from netCDF4 import Dataset
 from dateutil.relativedelta import relativedelta
 import numpy as np
-#from cruAKtemp.tests import examples_directory, data_directory
 from .tests import examples_directory, data_directory
 from nose.tools import (assert_greater_equal, assert_less_equal,
                         assert_true)
@@ -116,7 +115,6 @@ class CruAKtempMethod(object):
                             # date variables end with "_date"
                             cfg_struct[var_name] = \
                                 dt.datetime.strptime(value, "%Y-%m-%d").date()
-                                #dt.datetime.strptime(value, "%Y-%m-%d").date()
                         elif var_name[0:4] == 'grid':
                             # grid variables are processed after cfg file read
                             grid_struct[var_name] = value
@@ -175,7 +173,8 @@ class CruAKtempMethod(object):
             # Likely a KeyError because missing a region or resolution
             raise
 
-        raise ValueError("Combination of run_region '%s' and run_resolution '%s' not recognized" % \
+        raise ValueError(
+            "Combination of run_region '%s' and run_resolution '%s' not recognized" % \
                          (cfg_struct['run_region'],\
                           cfg_struct['run_resolution']))
 
@@ -269,7 +268,6 @@ class CruAKtempMethod(object):
             cfg_filename = os.path.join(examples_directory,
                                         'default_temperature.cfg')
 
-        #cfg_struct = self.get_config_from_yaml_file(cfg_filename)
         cfg_struct = self.get_config_from_oldstyle_file(cfg_filename)
 
         # Verify that the parameters are correct for the grid type
@@ -289,16 +287,12 @@ class CruAKtempMethod(object):
             # From config
             self._timestep = cfg_struct['timestep']
             self.first_date = cfg_struct['model_start_date']
+
             # This could be set externally, eg by WMT
             if self._date_at_timestep0 is None:
                 self._date_at_timestep0 = self.first_date
             self.last_date = cfg_struct['model_end_date']
-            ### CALL FUNCTION, DONT READ FROM STRUCT
-            #HERE
             self.get_first_last_dates_from_nc()
-            #self._first_valid_date = cfg_struct['dataset_start_date']
-            #self._last_valid_date = cfg_struct['dataset_end_date']
-            #HERE
 
             # Ensure that model dates are okay
             assert_between(self._date_at_timestep0,
@@ -470,7 +464,7 @@ class CruAKtempMethod(object):
         while True:
             line = cfg_unit.readline()
             if line == '':
-                break                  # (reached end of file)
+                break  # (reached end of file)
 
             # Comments are lines that start with '#'
             COMMENT = (line[0] == '#')

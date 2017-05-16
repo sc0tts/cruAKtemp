@@ -152,4 +152,9 @@ def test_can_increment_to_end_of_run():
     ct.T_air.tofile("end_T_air.dat")
     # Note: nc time of 4000 corresponds to model date of Dec 15, 2010
 
-
+def test_first_and_last_valid_dates():
+    """ Test that first and last valid dates are read from netcdf file """
+    ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
+    ct.initialize_from_config_file()
+    assert_equal(datetime.date(1901,1,1), ct._first_valid_date)
+    assert_equal(datetime.date(2009,12,31), ct._last_valid_date)
