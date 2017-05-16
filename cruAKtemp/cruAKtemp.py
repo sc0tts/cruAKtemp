@@ -17,7 +17,7 @@ import yaml
 from netCDF4 import Dataset
 from dateutil.relativedelta import relativedelta
 import numpy as np
-from .tests import examples_directory, data_directory
+from tests import examples_directory, data_directory
 from nose.tools import (assert_greater_equal, assert_less_equal,
                         assert_true)
 
@@ -35,8 +35,6 @@ class CruAKtempMethod(object):
         self._cru_temperature_ncfile = Dataset       # netCDF file handle
         self._cru_temperature = None # This will point to the nc file data
         self._current_date = None # Current num days since _start_date
-        self._start_date = None   # Real date of start of model run
-        self._end_date = None     # Date on which model run ends
         self._date_at_timestep0 = None  # this could be overwritten with set()
         self._latitude = None # Will point to this model's latitude grid
         self._longitude = None # Will point to this model's longitude grid
@@ -319,14 +317,12 @@ class CruAKtempMethod(object):
             self._timestep_duration = cfg_struct['timestep']
 
             # first_date and last_date are years from cfg file
-            # self.first_date = cfg_struct['model_start_date']
             self.first_date = dt.date(cfg_struct['model_start_year'],
                                       self.month, self.day)
             # This could be set externally, eg by WMT
             if self._date_at_timestep0 is None:
                 self._date_at_timestep0 = self.first_date
 
-            #self.last_date = cfg_struct['model_end_date']
             self.last_date = dt.date(cfg_struct['model_end_year'],
                                      self.month, self.day)
 
@@ -445,9 +441,18 @@ class CruAKtempMethod(object):
     def get_end_timestep(self):
         return self.timestep_from_date(self.last_date)
 
-    def update(self):
-        # Update values for one timestep
-        self.increment_date()
+    def update(self, frac=None):
+        # Update can handle fractional timesteps...sort of
+        if frac is not None:
+            print("Fractional times not yet permitted, rounding to nearest int")
+            time_change = self._timestep_duration * int(frac + 0.5)
+        else:
+            time_change = self._timestep_duration
+
+        for n in range(time_change):
+            # Update values for one timestep
+            self.increment_date()
+
         self.update_temperature_values()
 
     def get_time_index(self, month, year):
