@@ -47,19 +47,22 @@ class BmiCruAKtempMethod(object):
 
         self._output_var_names = (
             'atmosphere_bottom_air__temperature',
-            'atmosphere_bottom_air__temperature_months',
+            'atmosphere_bottom_air__temperature_mean_jan',
+            'atmosphere_bottom_air__temperature_mean_jul',
             'atmosphere_bottom_air__temperature_year',
         )
 
         self._var_name_map = {
             'atmosphere_bottom_air__temperature':        'T_air',
-            'atmosphere_bottom_air__temperature_months': 'T_air_prior_months',
+            'atmosphere_bottom_air__temperature_mean_jan': 'T_air_prior_jan',
+            'atmosphere_bottom_air__temperature_mean_jul': 'T_air_prior_jul',
             'atmosphere_bottom_air__temperature_year':   'T_air_prior_year'
         }
 
         self._var_units_map = {
             'atmosphere_bottom_air__temperature':        'deg_C',
-            'atmosphere_bottom_air__temperature_months': 'deg_C',
+            'atmosphere_bottom_air__temperature_mean_jan': 'deg_C',
+            'atmosphere_bottom_air__temperature_mean_jul': 'deg_C',
             'atmosphere_bottom_air__temperature_year':   'deg_C',
             'datetime__start':                           'days',
             'datetime__end':                             'days'}
@@ -95,7 +98,8 @@ class BmiCruAKtempMethod(object):
             # These are the links to the model's variables and
             # should be consistent with _var_name_map
             'atmosphere_bottom_air__temperature': self._model.T_air,
-            'atmosphere_bottom_air__temperature_months': self._model.T_air_prior_months,
+            'atmosphere_bottom_air__temperature_mean_jan': self._model.T_air_prior_jan,
+            'atmosphere_bottom_air__temperature_mean_jul': self._model.T_air_prior_jul,
             'atmosphere_bottom_air__temperature_year': self._model.T_air_prior_year,
             'datetime__start':                    self._model.first_date,
             'datetime__end':                      self._model.last_date}
@@ -142,8 +146,10 @@ class BmiCruAKtempMethod(object):
         # Set the bmi temperature to the updated value in the model
         self._values['atmosphere_bottom_air__temperature'] = \
                 self._model.T_air
-        self._values['atmosphere_bottom_air__temperature_months'] = \
-                self._model.T_air_prior_months
+        self._values['atmosphere_bottom_air__temperature_mean_jan'] = \
+                self._model.T_air_prior_jan
+        self._values['atmosphere_bottom_air__temperature_mean_jan'] = \
+                self._model.T_air_prior_jul
         self._values['atmosphere_bottom_air__temperature_year'] = \
                 self._model.T_air_prior_year
 
@@ -160,8 +166,10 @@ class BmiCruAKtempMethod(object):
         self._model.update(frac=time_fraction)
         self._values['atmosphere_bottom_air__temperature'] = \
                 self._model.T_air
-        self._values['atmosphere_bottom_air__temperature_months'] = \
-                self._model.T_air_prior_months
+        self._values['atmosphere_bottom_air__temperature_mean_jan'] = \
+                self._model.T_air_prior_jan
+        self._values['atmosphere_bottom_air__temperature_mean_jul'] = \
+                self._model.T_air_prior_jul
         self._values['atmosphere_bottom_air__temperature_year'] = \
                 self._model.T_air_prior_year
 
