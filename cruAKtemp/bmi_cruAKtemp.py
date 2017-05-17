@@ -148,7 +148,7 @@ class BmiCruAKtempMethod(object):
                 self._model.T_air
         self._values['atmosphere_bottom_air__temperature_mean_jan'] = \
                 self._model.T_air_prior_jan
-        self._values['atmosphere_bottom_air__temperature_mean_jan'] = \
+        self._values['atmosphere_bottom_air__temperature_mean_jul'] = \
                 self._model.T_air_prior_jul
         self._values['atmosphere_bottom_air__temperature_year'] = \
                 self._model.T_air_prior_year
