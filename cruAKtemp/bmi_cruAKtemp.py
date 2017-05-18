@@ -206,7 +206,8 @@ class BmiCruAKtempMethod(object):
         return self._values[var_name]
 
     def set_value(self, var_name, new_var_values):
-        self._values[var_name] = new_var_values
+        val = self.get_value_ref(var_name)
+        val[:] = new_var_values
 
     def set_value_at_indices(self, var_name, new_var_values, indices):
         self.get_value_ref(var_name).flat[indices] = new_var_values
@@ -221,7 +222,7 @@ class BmiCruAKtempMethod(object):
         return np.asarray(self.get_value_ref(var_name)).nbytes
 
     def get_value(self, var_name):
-        return np.asarray(self.get_value_ref(var_name))
+        return self.get_value_ref(var_name).copy()
 
     def get_var_type(self, var_name):
         return str(self.get_value_ref(var_name).dtype)
