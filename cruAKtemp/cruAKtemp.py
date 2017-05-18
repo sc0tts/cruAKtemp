@@ -41,6 +41,8 @@ class CruAKtempMethod(object):
         self._temperature = None # Will point to this model's temperature grid
         self.T_air = None        # Temperature grid
         self.T_air_prior_months = None  # Temperature grid each prior 12 months
+        self.T_air_prior_jan = None  # Temperature grid prior January
+        self.T_air_prior_jul = None  # Temperature grid prior July
         self.T_air_prior_year = None  # Temperature grid average prior 12 months
         self._time_units = "years"  # Timestep is in years
         self._timestep_duration = 0
@@ -500,6 +502,8 @@ class CruAKtempMethod(object):
             self.T_air_prior_months.append(
                 self.get_temperatures_month_year(
                     thisdate.month, thisdate.year))
+        self.T_air_prior_jan = self.T_air_prior_months[0]
+        self.T_air_prior_jul = self.T_air_prior_months[6]
         self.T_air_prior_year = np.average(self.T_air_prior_months, axis=0)
 
     def read_config_file(self):

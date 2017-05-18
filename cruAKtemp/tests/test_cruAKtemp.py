@@ -161,3 +161,13 @@ def test_first_and_last_valid_dates():
     ct.initialize_from_config_file()
     assert_equal(datetime.date(1901,1,1), ct._first_valid_date)
     assert_equal(datetime.date(2009,12,31), ct._last_valid_date)
+
+def test_jan_jul_arrays():
+    """ test that cruAKtemp provides Jan and Jul values as individual arrays """
+    ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
+    ct.initialize_from_config_file()
+    expected_jan_val = -25.7
+    expected_jul_val = 11.4
+
+    assert_almost_equal(ct.T_air_prior_jan[0, 0], expected_jan_val, places=5)
+    assert_almost_equal(ct.T_air_prior_jul[0, 0], expected_jul_val, places=5)

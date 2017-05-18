@@ -50,7 +50,8 @@ def test_get_output_var_names():
     ct.initialize(cfg_file=default_config_filename)
     output_vars = ct.get_output_var_names()
     output_list = ('atmosphere_bottom_air__temperature',
-                   'atmosphere_bottom_air__temperature_months',
+                   'atmosphere_bottom_air__temperature_mean_jan',
+                   'atmosphere_bottom_air__temperature_mean_jul',
                    'atmosphere_bottom_air__temperature_year')
     # In the future, we may include the start and end datetimes as outputs
     #output_list = ('atmosphere_bottom_air__temperature', 'datetime__start',
@@ -62,4 +63,7 @@ def test_get_var_name():
     ct.initialize(cfg_file=default_config_filename)
     this_var_name = ct.get_var_name('atmosphere_bottom_air__temperature')
     assert_equal(this_var_name, 'T_air')
+    this_var_name = \
+        ct.get_var_name('atmosphere_bottom_air__temperature_mean_jul')
+    assert_equal(this_var_name, 'T_air_prior_jul')
 
