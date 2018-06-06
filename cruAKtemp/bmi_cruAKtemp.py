@@ -53,6 +53,8 @@ class BmiCruAKtempMethod(object):
         )
 
         self._var_name_map = {
+            'latitude': '_latitude',
+            'longitude': '_longitude',
             'atmosphere_bottom_air__temperature':        'T_air',
             'atmosphere_bottom_air__temperature_mean_jan': 'T_air_prior_jan',
             'atmosphere_bottom_air__temperature_mean_jul': 'T_air_prior_jul',
@@ -60,6 +62,8 @@ class BmiCruAKtempMethod(object):
         }
 
         self._var_units_map = {
+            'latitude': 'degree_north',
+            'longitude': 'degree_east',
             'atmosphere_bottom_air__temperature':        'deg_C',
             'atmosphere_bottom_air__temperature_mean_jan': 'deg_C',
             'atmosphere_bottom_air__temperature_mean_jul': 'deg_C',
@@ -97,6 +101,8 @@ class BmiCruAKtempMethod(object):
         self._values = {
             # These are the links to the model's variables and
             # should be consistent with _var_name_map
+            'latitude': self._model._latitude,
+            'longitude': self._model._longitude,
             'atmosphere_bottom_air__temperature': self._model.T_air,
             'atmosphere_bottom_air__temperature_mean_jan': self._model.T_air_prior_jan,
             'atmosphere_bottom_air__temperature_mean_jul': self._model.T_air_prior_jul,
