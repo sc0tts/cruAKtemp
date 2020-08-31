@@ -2,12 +2,14 @@
 
 Utility routines for the cruAKtemp package
 """
+import datetime
+import errno
+import os
+import sys
+
 import numpy as np
 import yaml
-import sys
-import datetime
-import os
-import errno
+
 
 def write_gridfile(gridname, gridshape=(1,), gridtype=np.float, filename=None):
     """write_grid: Creates a grid for permamodel runs
@@ -20,63 +22,67 @@ def write_gridfile(gridname, gridshape=(1,), gridtype=np.float, filename=None):
     try:
         tempgrid = np.zeros(gridshape, dtype=gridtype)
     except:
-        raise ValueError("Can't create grid of shape %s and type %s: %s"\
-                         % (str(gridshape), str(gridtype), sys.exc_info()[0]))
+        raise ValueError(
+            "Can't create grid of shape %s and type %s: %s"
+            % (str(gridshape), str(gridtype), sys.exc_info()[0])
+        )
     griddict = {}
-    griddict['gridname'] = gridname
-    griddict['gridshape'] = gridshape
-    griddict['gridtype'] = gridtype
+    griddict["gridname"] = gridname
+    griddict["gridshape"] = gridshape
+    griddict["gridtype"] = gridtype
 
     # Write the grid description to the provided filename or return it
     try:
-        yamlstream = file(filename, 'w')
+        yamlstream = file(filename, "w")
         yaml.dump(griddict, yamlstream)
         return None
     except:
         return yaml.dump(griddict)
 
-def generate_default_temperature_run_cfg_file(filename=None,
-                                              overwrite=False,SILENT=True):
+
+def generate_default_temperature_run_cfg_file(
+    filename=None, overwrite=False, SILENT=True
+):
     """generate_default_temperature_run_cfg_file:
     Creates a default configuration file for cruAKtemp
     """
     cfgdict = {}
     # Description of model run
-    cfgdict['run_description'] = "north slope subset of upscaled cru-ncep temp data"
-    cfgdict['run_region'] = "Alaska"
+    cfgdict["run_description"] = "north slope subset of upscaled cru-ncep temp data"
+    cfgdict["run_region"] = "Alaska"
 
     # Grid description
-    cfgdict['grid_type'] = 'uniform_rectilinear'
-    cfgdict['run_resolution'] = "lowres"
-    cfgdict['run_resolution'] = "lowres"
-    cfgdict['grid_shape'] = (40, 20)
-    cfgdict['i_ul'] = 50
-    cfgdict['j_ul'] = 25
+    cfgdict["grid_type"] = "uniform_rectilinear"
+    cfgdict["run_resolution"] = "lowres"
+    cfgdict["run_resolution"] = "lowres"
+    cfgdict["grid_shape"] = (40, 20)
+    cfgdict["i_ul"] = 50
+    cfgdict["j_ul"] = 25
 
     # Time description
-    cfgdict['timestep'] = datetime.timedelta(days=1)
-    #cfgdict['reference_date'] = datetime.date(1900, 1, 1)
-    cfgdict['reference_date'] = datetime.datetime(1900, 1, 1)
-    cfgdict['model_start_date'] = datetime.datetime(1902, 1, 1)
-    cfgdict['model_end_date'] = datetime.datetime(1910, 12, 31)
-    cfgdict['dataset_start_date'] = datetime.datetime(1901, 1, 1)
-    cfgdict['dataset_end_date'] = datetime.datetime(2009, 12, 31)
-    cfgdict['grids'] = {
-        'temperature': 'np.float'}
+    cfgdict["timestep"] = datetime.timedelta(days=1)
+    # cfgdict['reference_date'] = datetime.date(1900, 1, 1)
+    cfgdict["reference_date"] = datetime.datetime(1900, 1, 1)
+    cfgdict["model_start_date"] = datetime.datetime(1902, 1, 1)
+    cfgdict["model_end_date"] = datetime.datetime(1910, 12, 31)
+    cfgdict["dataset_start_date"] = datetime.datetime(1901, 1, 1)
+    cfgdict["dataset_end_date"] = datetime.datetime(2009, 12, 31)
+    cfgdict["grids"] = {"temperature": "np.float"}
 
     if filename is None:
-        filename = 'default_temperature.cfg'
-    cfgdict['filename'] = filename
+        filename = "default_temperature.cfg"
+    cfgdict["filename"] = filename
 
     if overwrite:
         try:
-            yamlfile = open(filename, 'w')
+            yamlfile = open(filename, "w")
             yaml.dump(cfgdict, yamlfile)
             return None
         except:
-            raise RuntimeError(\
-                "Error trying to create default temperature cfg file: %s" \
-                            % sys.exc_info[0])
+            raise RuntimeError(
+                "Error trying to create default temperature cfg file: %s"
+                % sys.exc_info[0]
+            )
     else:
         fileflags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
         try:
@@ -90,7 +96,6 @@ def generate_default_temperature_run_cfg_file(filename=None,
             else:
                 raise
         else:
-            with os.fdopen(yamlfile_handle, 'w') as yamlfile:
+            with os.fdopen(yamlfile_handle, "w") as yamlfile:
                 yaml.dump(cfgdict, yamlfile)
             return None
-

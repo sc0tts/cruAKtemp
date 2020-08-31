@@ -3,16 +3,24 @@ test_cruAKtemp.py
   tests of the cruAKtemp component of permamodel
 """
 
-import cruAKtemp
-import os
-import numpy as np
-from ..tests import data_directory, examples_directory
-from nose.tools import (assert_is_instance, assert_greater_equal,
-                        assert_less_equal, assert_almost_equal,
-                        assert_greater, assert_in, assert_true,
-                        assert_equal)
 import datetime
+import os
+
+import cruAKtemp
+import numpy as np
 from dateutil.relativedelta import relativedelta
+from nose.tools import (
+    assert_almost_equal,
+    assert_equal,
+    assert_greater,
+    assert_greater_equal,
+    assert_in,
+    assert_is_instance,
+    assert_less_equal,
+    assert_true,
+)
+
+from ..tests import data_directory, examples_directory
 
 
 # ---------------------------------------------------
@@ -21,32 +29,36 @@ from dateutil.relativedelta import relativedelta
 def test_can_initialize_cruAKtemp_class():
     ct = cruAKtemp.cruAKtemp.CruAKtempMethod
 
+
 def test_write_gridfile():
     """ Test that can write a gridfile to disk """
     # Create a temperature grid with default structure
-    grid_desc = cruAKtemp.cruAKtemp_utils.write_gridfile('temperature')
+    grid_desc = cruAKtemp.cruAKtemp_utils.write_gridfile("temperature")
 
     # Create a temperature grid with described shape and type
-    grid_desc = cruAKtemp.cruAKtemp_utils.write_gridfile('temperature',
-                                                         gridshape=(3,4),
-                                                        gridtype=np.float64)
+    grid_desc = cruAKtemp.cruAKtemp_utils.write_gridfile(
+        "temperature", gridshape=(3, 4), gridtype=np.float64
+    )
 
     # Fail when attempting to create a grid with non-shape shape
     try:
-        grid_desc = cruAKtemp.cruAKtemp_utils.write_gridfile('temperature',
-                                                         gridshape='notashape')
+        grid_desc = cruAKtemp.cruAKtemp_utils.write_gridfile(
+            "temperature", gridshape="notashape"
+        )
     except ValueError:
         pass
 
+
 def test_write_default_temperature_cfg_file():
     """ test that util operation writes default cfg file """
-    cruAKtemp.cruAKtemp_utils.generate_default_temperature_run_cfg_file(\
-        SILENT=True)
+    cruAKtemp.cruAKtemp_utils.generate_default_temperature_run_cfg_file(SILENT=True)
+
 
 def test_initialize_opens_temperature_netcdf_file():
     """ Test that temperature netcdf file is opened """
     ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
     ct.initialize_from_config_file()
+
 
 def test_get_timestep_from_date():
     """ Test get timestep from a date """
@@ -62,9 +74,10 @@ def test_get_timestep_from_date():
     ct.increment_date(number_of_years)
     assert_equal(10, ct._current_timestep)
 
-    #...and make the date 10 days later
+    # ...and make the date 10 days later
     this_timedelta = relativedelta(years=number_of_years)
-    assert_equal(ct.first_date+this_timedelta, ct._current_date)
+    assert_equal(ct.first_date + this_timedelta, ct._current_date)
+
 
 def test_time_index_yields_correct_values():
     """ Check that we get the expected index into the netcdf file
@@ -89,6 +102,7 @@ def test_time_index_yields_correct_values():
     year = 2002
     idx = ct.get_time_index(month, year)
     assert_equal(idx, 1212)
+
 
 def test_specific_netcdf_values():
     """ Test that indexing yields specific values chosen from file
@@ -123,14 +137,26 @@ def test_getting_monthly_annual_temp_values():
 
     # Test prior months values
     # These are values starting from 2/1901
-    #actualvalues = [-28.700001, -24.799999, -16.600000, -2.700000,
+    # actualvalues = [-28.700001, -24.799999, -16.600000, -2.700000,
     #                 7.800000, 11.000000, 7.100000, -0.300000,
     #                -13.400000, -22.100000, -26.500000, -25.700001]
-    #actualmean = -11.241668
+    # actualmean = -11.241668
 
     # These values start with 1/1902
-    actualvalues = [-25.7, -27.0, -26.6, -16.9, -2.8, 8.1,
-                    11.4, 7.3, -0.3, -13.6, -22.1, -28.9]
+    actualvalues = [
+        -25.7,
+        -27.0,
+        -26.6,
+        -16.9,
+        -2.8,
+        8.1,
+        11.4,
+        7.3,
+        -0.3,
+        -13.6,
+        -22.1,
+        -28.9,
+    ]
     actualmean = -11.425
 
     vallist = []
@@ -144,6 +170,7 @@ def test_getting_monthly_annual_temp_values():
     # Test prior year value
     assert_almost_equal(ct.T_air_prior_year[0, 0], actualmean, places=5)
 
+
 def test_can_increment_to_end_of_run():
     """ Test that we can get values for last timestep """
     ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
@@ -155,12 +182,14 @@ def test_can_increment_to_end_of_run():
     ct.T_air.tofile("end_T_air.dat")
     # Note: nc time of 4000 corresponds to model date of Dec 15, 2010
 
+
 def test_first_and_last_valid_dates():
     """ Test that first and last valid dates are read from netcdf file """
     ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
     ct.initialize_from_config_file()
-    assert_equal(datetime.date(1901,1,1), ct._first_valid_date)
-    assert_equal(datetime.date(2009,12,31), ct._last_valid_date)
+    assert_equal(datetime.date(1901, 1, 1), ct._first_valid_date)
+    assert_equal(datetime.date(2009, 12, 31), ct._last_valid_date)
+
 
 def test_jan_jul_arrays():
     """ test that cruAKtemp provides Jan and Jul values as individual arrays """
