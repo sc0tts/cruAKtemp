@@ -5,9 +5,10 @@ test_cruAKtemp.py
 
 import datetime
 import os
+import pathlib
 
-import cruAKtemp
 import numpy as np
+import pkg_resources
 from dateutil.relativedelta import relativedelta
 from nose.tools import (
     assert_almost_equal,
@@ -20,8 +21,12 @@ from nose.tools import (
     assert_true,
 )
 
-from ..tests import data_directory, examples_directory
+import cruAKtemp
 
+data_directory = pathlib.Path(pkg_resources.resource_filename("cruAKtemp", "data"))
+examples_directory = pathlib.Path(
+    pkg_resources.resource_filename("cruAKtemp", "examples")
+)
 
 # ---------------------------------------------------
 # Tests that the frost_number module is importing

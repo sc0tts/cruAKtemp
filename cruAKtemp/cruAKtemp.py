@@ -10,6 +10,8 @@ from __future__ import print_function
 import calendar
 import datetime as dt
 import os
+import pathlib
+import pkg_resources
 
 import numpy as np
 import yaml
@@ -20,7 +22,10 @@ from dateutil.relativedelta import relativedelta
 # Using netcdf4
 from netCDF4 import Dataset
 from nose.tools import assert_greater_equal, assert_less_equal, assert_true
-from tests import data_directory, examples_directory
+
+
+data_directory = pathlib.Path(pkg_resources.resource_filename("cruAKtemp", "data"))
+examples_directory = pathlib.Path(pkg_resources.resource_filename("cruAKtemp", "examples"))
 
 
 def assert_between(value, minval, maxval):
@@ -32,9 +37,7 @@ def assert_between(value, minval, maxval):
 class CruAKtempMethod:
     def __init__(self):
         self._cru_temperature_nc_filename = None  # Name of input netcdf file
-        self._cru_temperature_nc_filename_default = os.path.join(
-            data_directory, "cruAKtemp.nc"
-        )
+        self._cru_temperature_nc_filename_default = data_directory / "cruAKtemp.nc"
         # Default name of input netcdf file
         self._cru_temperature_ncfile = Dataset  # netCDF file handle
         self._cru_temperature = None  # This will point to the nc file data
@@ -218,7 +221,7 @@ class CruAKtempMethod:
                 cfg_struct["run_resolution"] == "lowres"
                 and cfg_struct["run_region"] == "Alaska"
             ):
-                return os.path.join(data_directory, "cru_alaska_lowres_temperature.nc")
+                return data_directory / "cru_alaska_lowres_temperature.nc"
         except:
             # Likely a KeyError because missing a region or resolution
             raise
@@ -313,7 +316,7 @@ class CruAKtempMethod:
         # Set the cfg file if it exists, otherwise, a default
         if not cfg_filename:
             # No config file specified, use a default
-            cfg_filename = os.path.join(examples_directory, "default_temperature.cfg")
+            cfg_filename = examples_directory / "default_temperature.cfg"
 
         cfg_struct = self.get_config_from_oldstyle_file(cfg_filename)
 

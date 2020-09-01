@@ -5,12 +5,11 @@ test_bmi_cruAKtemp.py
 
 import datetime
 
-# import bmi_cruAKtemp
 import os
+import pathlib
 
-# from cruAKtemp import cruAKtempMethod
-import cruAKtemp
 import numpy as np
+import pkg_resources
 from nose.tools import (
     assert_almost_equal,
     assert_equal,
@@ -22,9 +21,13 @@ from nose.tools import (
     assert_true,
 )
 
-from ..tests import data_directory, examples_directory
+import cruAKtemp
 
-default_config_filename = os.path.join(examples_directory, "default_temperature.cfg")
+
+default_config_filename = (
+    pathlib.Path(pkg_resources.resource_filename("cruAKtemp", "examples"))
+    / "default_temperature.cfg"
+)
 
 # ---------------------------------------------------
 # Tests that ensure we have bmi functionality
