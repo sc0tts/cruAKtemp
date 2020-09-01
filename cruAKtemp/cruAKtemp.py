@@ -11,9 +11,9 @@ import calendar
 import datetime as dt
 import os
 import pathlib
-import pkg_resources
 
 import numpy as np
+import pkg_resources
 import yaml
 from dateutil.relativedelta import relativedelta
 
@@ -21,17 +21,46 @@ from dateutil.relativedelta import relativedelta
 # from scipy.io.netcdf import NetCDFFile as Dataset
 # Using netcdf4
 from netCDF4 import Dataset
-from nose.tools import assert_greater_equal, assert_less_equal, assert_true
-
 
 data_directory = pathlib.Path(pkg_resources.resource_filename("cruAKtemp", "data"))
-examples_directory = pathlib.Path(pkg_resources.resource_filename("cruAKtemp", "examples"))
+examples_directory = pathlib.Path(
+    pkg_resources.resource_filename("cruAKtemp", "examples")
+)
 
 
-def assert_between(value, minval, maxval):
-    """Fail if value is not between minval and maxval"""
-    assert_greater_equal(value, minval)
-    assert_less_equal(value, maxval)
+def in_bounds_or_raise(value, minval=None, maxval=None):
+    """Check if a value is in bounds, otherwise raise an error
+
+    Parameters
+    ----------
+    value : number
+        A number to check.
+    minval : number, optional
+        Lower bound (inclusive).
+    maxval : number, optional
+        Upper bound (inclusive).
+
+    Examples
+    --------
+    >>> from cruAKtemp.cruAKtemp import in_bounds_or_raise
+    >>> in_bounds_or_raise(0, -1, 1)
+    >>> in_bounds_or_raise(0, maxval=1)
+    >>> in_bounds_or_raise(0, minval=0)
+    >>> in_bounds_or_raise(-1, 0)
+    Traceback (most recent call last):
+    ...
+    ValueError: value must be at least 0 (-1)
+    """
+    if (minval is not None and value < minval) or (
+        maxval is not None and value > maxval
+    ):
+        if maxval is None:
+            message = f"value must be at least {minval} ({value})"
+        elif lower is None:
+            message = f"value must be less than {maxval} ({value})"
+        else:
+            message = f"value must be between {minval} and {maxval} ({value})"
+        raise ValueError(message)
 
 
 class CruAKtempMethod:
@@ -94,36 +123,29 @@ class CruAKtempMethod:
                 raise ValueError("grid values must be a type")
 
         # Grid shape can be used to create a numpy array
-        assert_true(isinstance(cfg["grid_shape"], tuple))
         try:
-            test_array = np.zeros(cfg["grid_shape"], dtype=np.uint8)
-            assert_true(test_array is not None)
-        except:
-            print(
-                "Grid shape can't be used for numpy array: %s" % str(cfg["grid_shape"])
-            )
-            raise
+            np.zeros(cfg["grid_shape"], dtype=np.uint8)
+        except TypeError:
+            raise ValueError(f"bad shape for grid ({cfg['grid_shape']})")
 
     def verify_config_for_rectilinear_run(self, cfg):
         # Need at least one grid
-        assert_greater_equal(len(cfg["grids"]), 1)
+        if len(cfg["grids"]) < 1:
+            raise ValueError("at least one grid is required")
 
         # All grids need a valid data type
         # name is a string, type is a type
         for k, v in cfg["grids"].items():
-            assert_true(isinstance(k, str))
-            assert_true(isinstance(type(v), type))
+            if not isinstance(k, str):
+                raise ValueError("grid keys must be a string")
+            if not isinstance(type(v), type):
+                raise ValueError("grid values must be a type")
 
         # Grid shape can be used to create a numpy array
-        assert_true(isinstance(cfg["grid_shape"], tuple))
         try:
-            test_array = np.zeros(cfg["grid_shape"], dtype=np.uint8)
-            assert_true(test_array is not None)
-        except:
-            print(
-                "Grid shape can't be used for numpy array: %s" % str(cfg["grid_shape"])
-            )
-            raise
+            np.zeros(cfg["grid_shape"], dtype=np.uint8)
+        except TypeError:
+            raise ValueError(f"bad shape for grid ({cfg['grid_shape']})")
 
     def get_config_from_oldstyle_file(self, cfg_filename):
         cfg_struct = {}
@@ -235,23 +257,21 @@ class CruAKtempMethod:
         """Convert model's i-index to cru file's index
         Input: i  the i-coordinate of the model grid
         Output: i_nc  the coordinate in the netcdf grid
-        inverse: if True, reverse the Input and Outpu
+        inverse: if True, reverse the Input and Output
         check_bounds: if True, verify that all values are valid
         """
         if not inverse:
-            if check_bounds:
-                assert_between(i, 0, self._grid_shape[0] - 1)
+            check_bounds and in_bounds_or_raise(i, 0, self._grid_shape[0] - 1)
             i_nc = self._nc_i0 + i * self._nc_iskip
-            if check_bounds:
-                assert_between(i_nc, 0, self._nc_xdim)
+
+            check_bounds and in_bounds_or_raise(i_nc, 0, self._nc_xdim)
             return i_nc
         else:
             i_nc = i
-            if check_bounds:
-                assert_between(i_nc, 0, self._nc_xdim)
+            check_bounds and in_bounds_or_raise(i_nc, 0, self._nc_xdim)
+
             i = (i_nc - self._nc_i0) / self._nc_iskip
-            if check_bounds:
-                assert_between(i, 0, self._grid_shape[0] - 1)
+            check_bounds and in_bounds_or_raise(i, 0, self._grid_shape[0] - 1)
             return i
 
     def j_nc_from_j(self, j, inverse=False, check_bounds=False):
@@ -262,19 +282,16 @@ class CruAKtempMethod:
         check_bounds: if True, verify that all values are valid
         """
         if not inverse:
-            if check_bounds:
-                assert_between(j, 0, self._grid_shape[1] - 1)
+            check_bounds and in_bounds_or_raise(j, 0, self._grid_shape[1] - 1)
             j_nc = self._nc_j0 + j * self._nc_jskip
-            if check_bounds:
-                assert_between(j_nc, 0, self._nc_xdim)
+
+            check_bounds and in_bounds_or_raise(j_nc, 0, self._nc_xdim)
             return j_nc
         else:
             j_nc = j
-            if check_bounds:
-                assert_between(j_nc, 0, self._nc_ydim)
+            check_bounds and in_bounds_or_raise(j_nc, 0, self._nc_ydim)
             j = (j_nc - self._nc_j0) / self._nc_jskip
-            if check_bounds:
-                assert_between(j, 0, self._grid_shape[1] - 1)
+            check_bounds and in_bounds_or_raise(j, 0, self._grid_shape[1] - 1)
             return j
 
     def get_first_last_dates_from_nc(self):
@@ -332,43 +349,40 @@ class CruAKtempMethod:
         self._cru_temperature_ncfile = Dataset(
             self._cru_temperature_nc_filename, "r", mmap=True
         )
-        assert_true(self._cru_temperature_ncfile is not None)
+        assert self._cru_temperature_ncfile is not None
 
         # Initialize the time variables
-        try:
-            # From config
-            self._timestep_duration = cfg_struct["timestep"]
+        # From config
+        self._timestep_duration = cfg_struct["timestep"]
 
-            # first_date and last_date are years from cfg file
-            self.first_date = dt.date(
-                cfg_struct["model_start_year"], self.month, self.day
-            )
-            # This could be set externally, eg by WMT
-            if self._date_at_timestep0 is None:
-                self._date_at_timestep0 = self.first_date
+        # first_date and last_date are years from cfg file
+        self.first_date = dt.date(
+            cfg_struct["model_start_year"], self.month, self.day
+        )
+        # This could be set externally, eg by WMT
+        if self._date_at_timestep0 is None:
+            self._date_at_timestep0 = self.first_date
 
-            self.last_date = dt.date(cfg_struct["model_end_year"], self.month, self.day)
+        self.last_date = dt.date(cfg_struct["model_end_year"], self.month, self.day)
 
-            self.get_first_last_dates_from_nc()
+        self.get_first_last_dates_from_nc()
 
-            # Ensure that model dates are okay
-            assert_between(
-                self._date_at_timestep0, self._first_valid_date, self._last_valid_date
-            )
-            assert_between(
-                self.first_date, self._first_valid_date, self._last_valid_date
-            )
-            assert_between(
-                self.last_date, self._first_valid_date, self._last_valid_date
-            )
+        # Ensure that model dates are okay
+        in_bounds_or_raise(
+            self._date_at_timestep0, self._first_valid_date, self._last_valid_date
+        )
+        in_bounds_or_raise(
+            self.first_date, self._first_valid_date, self._last_valid_date
+        )
+        in_bounds_or_raise(
+            self.last_date, self._first_valid_date, self._last_valid_date
+        )
 
-            # Initial calculations, assuming units of days
-            self._current_date = self._date_at_timestep0
-            self._first_timestep = self.timestep_from_date(self.first_date)
-            self._last_timestep = self.timestep_from_date(self.last_date)
-            self._current_timestep = self._first_timestep
-        except:
-            raise
+        # Initial calculations, assuming units of days
+        self._current_date = self._date_at_timestep0
+        self._first_timestep = self.timestep_from_date(self.first_date)
+        self._last_timestep = self.timestep_from_date(self.last_date)
+        self._current_timestep = self._first_timestep
 
         # Allocate the grids
         self._grid_shape = cfg_struct["grid_shape"]
