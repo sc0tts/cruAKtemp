@@ -15,7 +15,7 @@ jobs:
     os: linux
     script:
     - pip install flake8
-	  - flake8 cruAKtemp tests
+    - flake8 cruAKtemp tests
 before_install:
 - |
   if [[ $TRAVIS_OS_NAME == "osx" ]]; then
