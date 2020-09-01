@@ -24,6 +24,7 @@ setup(
     long_description=long_description,
     url="http://github.com/permamodel/cruAKtemp",
     classifiers=[
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
