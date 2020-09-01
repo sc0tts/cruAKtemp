@@ -29,7 +29,7 @@ def assert_between(value, minval, maxval):
     assert_less_equal(value, maxval)
 
 
-class CruAKtempMethod(object):
+class CruAKtempMethod:
     def __init__(self):
         self._cru_temperature_nc_filename = None  # Name of input netcdf file
         self._cru_temperature_nc_filename_default = os.path.join(
@@ -79,13 +79,16 @@ class CruAKtempMethod(object):
 
     def verify_config_for_uniform_rectilinear_run(self, cfg):
         # Need at least one grid
-        assert_greater_equal(len(cfg["grids"]), 1)
+        if len(cfg["grids"]) < 1:
+            raise ValueError("at least one grid is required")
 
         # All grids need a valid data type
         # name is a string, type is a type
-        for k, v in cfg["grids"].iteritems():
-            assert_true(isinstance(k, str))
-            assert_true(isinstance(type(v), type))
+        for k, v in cfg["grids"].items():
+            if not isinstance(k, str):
+                raise ValueError("grid keys must be a string")
+            if not isinstance(type(v), type):
+                raise ValueError("grid values must be a type")
 
         # Grid shape can be used to create a numpy array
         assert_true(isinstance(cfg["grid_shape"], tuple))
@@ -104,7 +107,7 @@ class CruAKtempMethod(object):
 
         # All grids need a valid data type
         # name is a string, type is a type
-        for k, v in cfg["grids"].iteritems():
+        for k, v in cfg["grids"].items():
             assert_true(isinstance(k, str))
             assert_true(isinstance(type(v), type))
 
