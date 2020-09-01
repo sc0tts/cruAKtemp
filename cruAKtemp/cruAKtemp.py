@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import calendar
 import datetime as dt
-import os
 import pathlib
 
 import numpy as np
@@ -56,7 +55,7 @@ def in_bounds_or_raise(value, minval=None, maxval=None):
     ):
         if maxval is None:
             message = f"value must be at least {minval} ({value})"
-        elif lower is None:
+        elif minval is None:
             message = f"value must be less than {maxval} ({value})"
         else:
             message = f"value must be between {minval} and {maxval} ({value})"
@@ -150,52 +149,44 @@ class CruAKtempMethod:
     def get_config_from_oldstyle_file(self, cfg_filename):
         cfg_struct = {}
         grid_struct = {}
-        try:
-            with open(cfg_filename, "r") as cfg_file:
-                # this is based loosely on read_config_file in BMI_base.py
-                while True:
-                    # Read lines from config file until no more remain
-                    line = cfg_file.readline()
-                    if line == "":
-                        break
+        with open(cfg_filename, "r") as cfg_file:
+            # this is based loosely on read_config_file in BMI_base.py
+            while True:
+                # Read lines from config file until no more remain
+                line = cfg_file.readline()
+                if line == "":
+                    break
 
-                    # Comments start with '#'
-                    COMMENT = line[0] == "#"
+                # Comments start with '#'
+                COMMENT = line[0] == "#"
 
-                    words = line.split("|")
-                    if (len(words) == 4) and (not COMMENT):
-                        var_name = words[0].strip()
-                        value = words[1].strip()
-                        var_type = words[2].strip()
+                words = line.split("|")
+                if (len(words) == 4) and (not COMMENT):
+                    var_name = words[0].strip()
+                    value = words[1].strip()
+                    var_type = words[2].strip()
 
-                        # Process the variables based on variable name
-                        if var_name[-4:] == "date":
-                            # date variables end with "_date"
-                            cfg_struct[var_name] = dt.datetime.strptime(
-                                value, "%Y-%m-%d"
-                            ).date()
-                        elif var_name[0:4] == "grid":
-                            # grid variables are processed after cfg file read
-                            grid_struct[var_name] = value
-                        elif var_name == "timestep":
-                            # timestep is now a number of years
-                            cfg_struct[var_name] = int(value)
-                        elif var_type == "int":
-                            # Convert integers to int
-                            cfg_struct[var_name] = int(value)
-                        elif var_type == "long":
-                            # Convert longs to int
-                            cfg_struct[var_name] = int(value)
-                        else:
-                            # Everything else is just passed as a string
-                            cfg_struct[var_name] = value
-
-        except:
-            print(
-                "\nError opening configuration file in\
-                  initialize_from_config_file()"
-            )
-            raise
+                    # Process the variables based on variable name
+                    if var_name[-4:] == "date":
+                        # date variables end with "_date"
+                        cfg_struct[var_name] = dt.datetime.strptime(
+                            value, "%Y-%m-%d"
+                        ).date()
+                    elif var_name[0:4] == "grid":
+                        # grid variables are processed after cfg file read
+                        grid_struct[var_name] = value
+                    elif var_name == "timestep":
+                        # timestep is now a number of years
+                        cfg_struct[var_name] = int(value)
+                    elif var_type == "int":
+                        # Convert integers to int
+                        cfg_struct[var_name] = int(value)
+                    elif var_type == "long":
+                        # Convert longs to int
+                        cfg_struct[var_name] = int(value)
+                    else:
+                        # Everything else is just passed as a string
+                        cfg_struct[var_name] = value
 
         """
         print(" ")
@@ -217,36 +208,27 @@ class CruAKtempMethod:
 
     def get_config_from_yaml_file(self, cfg_filename):
         cfg_struct = None
-        try:
-            with open(cfg_filename, "r") as cfg_file:
-                cfg_struct = yaml.load(cfg_file)
-        except:
-            print(
-                "\nError opening configuration file in\
-                  initialize_from_config_file()"
-            )
-            raise
+        with open(cfg_filename, "r") as cfg_file:
+            cfg_struct = yaml.load(cfg_file)
 
         return cfg_struct
 
     def verify_run_type_parameters(self, cfg_struct):
         # There should be a separate verify_config_for_<gridtype>_run()
         # routine for each type of grid
-        try:
-            exec("self.verify_config_for_%s_run(cfg_struct)" % cfg_struct["grid_type"])
-        except:
-            raise
+        grid_type = cfg_struct["grid_type"]
+        getattr(self, f"verify_config_for_{grid_type}_run")(cfg_struct)
+        # try:
+        #     exec("self.verify_config_for_%s_run(cfg_struct)" % cfg_struct["grid_type"])
+        # except:
+        #     raise
 
     def verify_temperature_netcdf_for_region_resolution(self, cfg_struct):
-        try:
-            if (
-                cfg_struct["run_resolution"] == "lowres"
-                and cfg_struct["run_region"] == "Alaska"
-            ):
-                return data_directory / "cru_alaska_lowres_temperature.nc"
-        except:
-            # Likely a KeyError because missing a region or resolution
-            raise
+        if (
+            cfg_struct["run_resolution"] == "lowres"
+            and cfg_struct["run_region"] == "Alaska"
+        ):
+            return data_directory / "cru_alaska_lowres_temperature.nc"
 
         raise ValueError(
             "Combination of run_region '%s' and run_resolution '%s' not recognized"
@@ -295,37 +277,34 @@ class CruAKtempMethod:
             return j
 
     def get_first_last_dates_from_nc(self):
-        try:
-            nc_time_var = self._cru_temperature_ncfile.variables["time"]
-            nc_time_units = nc_time_var.getncattr("time_units").split()
-            for part in nc_time_units:
-                # Most of these "part"s will fail,
-                # but the 'time_units' value will execute the try clause
-                try:
-                    # If we get a datestring of YYYY-MM-DD, parse it
-                    reference_time = dt.datetime.strptime(part, "%Y-%m-%d").date()
+        nc_time_var = self._cru_temperature_ncfile.variables["time"]
+        nc_time_units = nc_time_var.getncattr("time_units").split()
+        for part in nc_time_units:
+            # Most of these "part"s will fail,
+            # but the 'time_units' value will execute the try clause
+            try:
+                # If we get a datestring of YYYY-MM-DD, parse it
+                reference_time = dt.datetime.strptime(part, "%Y-%m-%d").date()
 
-                    # First valid day is first day of month of first_date
-                    days_to_first_day = dt.timedelta(days=int(nc_time_var[0]))
-                    start_date = reference_time + days_to_first_day
-                    self._first_valid_date = dt.date(
-                        start_date.year, start_date.month, 1
-                    )
+                # First valid day is first day of month of first_date
+                days_to_first_day = dt.timedelta(days=int(nc_time_var[0]))
+                start_date = reference_time + days_to_first_day
+                self._first_valid_date = dt.date(
+                    start_date.year, start_date.month, 1
+                )
 
-                    # Last valid day is last day of month of last_date
-                    num_days = len(nc_time_var)
-                    days_to_last_day = dt.timedelta(days=int(nc_time_var[num_days - 1]))
-                    last_date = reference_time + days_to_last_day
-                    day = calendar.monthrange(last_date.year, last_date.month)[1]
-                    self._last_valid_date = dt.date(
-                        last_date.year, last_date.month, day
-                    )
-                    break
-                except ValueError:
-                    # Expect most 'parts' of nc_time_units not to be date
-                    pass
-        except:
-            raise
+                # Last valid day is last day of month of last_date
+                num_days = len(nc_time_var)
+                days_to_last_day = dt.timedelta(days=int(nc_time_var[num_days - 1]))
+                last_date = reference_time + days_to_last_day
+                day = calendar.monthrange(last_date.year, last_date.month)[1]
+                self._last_valid_date = dt.date(
+                    last_date.year, last_date.month, day
+                )
+                break
+            except ValueError:
+                # Expect most 'parts' of nc_time_units not to be date
+                pass
 
     def initialize_from_config_file(self, cfg_filename=None):
         cfg_struct = None
@@ -509,12 +488,7 @@ class CruAKtempMethod:
     def get_temperatures_month_year(self, month, year):
         """ Return the temperature field at specified month, year """
         # Check for valid month, year
-        try:
-            testdate = dt.date(year, month, 1)
-        except:
-            raise ValueError(
-                "Month (%d) and Year (%d) can't be made a date" % (month, year)
-            )
+        testdate = dt.date(year, month, 1)
 
         testdate = dt.date(year, month, 1)
         # Check that month, year are in range

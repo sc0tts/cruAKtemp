@@ -4,7 +4,6 @@ test_cruAKtemp.py
 """
 
 import datetime
-import os
 import pathlib
 
 import numpy as np
@@ -20,30 +19,29 @@ examples_directory = pathlib.Path(
     pkg_resources.resource_filename("cruAKtemp", "examples")
 )
 
+
 # ---------------------------------------------------
 # Tests that the frost_number module is importing
 # ---------------------------------------------------
 def test_can_initialize_cruAKtemp_class():
-    ct = cruAKtemp.CruAKtempMethod
+    cruAKtemp.CruAKtempMethod
 
 
-def test_write_gridfile():
+def test_write_gridfile(tmpdir):
     """ Test that can write a gridfile to disk """
     # Create a temperature grid with default structure
-    grid_desc = cruAKtemp.utils.write_gridfile("temperature")
+    cruAKtemp.utils.write_gridfile("temperature")
 
     # Create a temperature grid with described shape and type
-    grid_desc = cruAKtemp.utils.write_gridfile(
-        "temperature", gridshape=(3, 4), gridtype=np.float64
-    )
+    cruAKtemp.utils.write_gridfile("temperature", gridshape=(3, 4), gridtype=np.float64)
 
     # Fail when attempting to create a grid with non-shape shape
-    try:
-        grid_desc = cruAKtemp.utils.write_gridfile(
-            "temperature", gridshape="notashape"
-        )
-    except ValueError:
-        pass
+    with pytest.raises(ValueError):
+        cruAKtemp.utils.write_gridfile("temperature", gridshape="notashape")
+
+    with tmpdir.as_cwd():
+        cruAKtemp.utils.write_gridfile("temperature", filename="temperature.grd")
+        assert (tmpdir / "temperature.grd").isfile()
 
 
 def test_write_default_temperature_cfg_file(tmpdir):

@@ -5,10 +5,8 @@ test_bmi_cruAKtemp.py
 
 import datetime
 
-import os
 import pathlib
 
-import numpy as np
 import pkg_resources
 
 import cruAKtemp
@@ -18,6 +16,7 @@ default_config_filename = (
     pathlib.Path(pkg_resources.resource_filename("cruAKtemp", "examples"))
     / "default_temperature.cfg"
 )
+
 
 # ---------------------------------------------------
 # Tests that ensure we have bmi functionality

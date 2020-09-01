@@ -20,8 +20,8 @@ def write_gridfile(gridname, gridshape=(1,), gridtype=np.float, filename=None):
     """
     # Ensure that the grid description is legal
     try:
-        tempgrid = np.zeros(gridshape, dtype=gridtype)
-    except:
+        np.zeros(gridshape, dtype=gridtype)
+    except TypeError:
         raise ValueError(
             "Can't create grid of shape %s and type %s: %s"
             % (str(gridshape), str(gridtype), sys.exc_info()[0])
@@ -32,12 +32,12 @@ def write_gridfile(gridname, gridshape=(1,), gridtype=np.float, filename=None):
     griddict["gridtype"] = gridtype
 
     # Write the grid description to the provided filename or return it
-    try:
-        yamlstream = file(filename, "w")
-        yaml.dump(griddict, yamlstream)
-        return None
-    except:
-        return yaml.dump(griddict)
+    contents = yaml.dump(griddict, default_flow_style=False)
+    if filename is not None:
+        with open(filename, "w") as fp:
+            fp.write(contents)
+    else:
+        return contents
 
 
 def generate_default_temperature_run_cfg_file(
@@ -74,15 +74,8 @@ def generate_default_temperature_run_cfg_file(
     cfgdict["filename"] = filename
 
     if overwrite:
-        try:
-            yamlfile = open(filename, "w")
-            yaml.dump(cfgdict, yamlfile)
-            return None
-        except:
-            raise RuntimeError(
-                "Error trying to create default temperature cfg file: %s"
-                % sys.exc_info[0]
-            )
+        with open(filename, "w") as fp:
+            yaml.dump(cfgdict, fp)
     else:
         fileflags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
         try:
