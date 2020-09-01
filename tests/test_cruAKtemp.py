@@ -22,6 +22,7 @@ from nose.tools import (
 )
 
 import cruAKtemp
+import cruAKtemp.utils
 
 data_directory = pathlib.Path(pkg_resources.resource_filename("cruAKtemp", "data"))
 examples_directory = pathlib.Path(
@@ -32,22 +33,22 @@ examples_directory = pathlib.Path(
 # Tests that the frost_number module is importing
 # ---------------------------------------------------
 def test_can_initialize_cruAKtemp_class():
-    ct = cruAKtemp.cruAKtemp.CruAKtempMethod
+    ct = cruAKtemp.CruAKtempMethod
 
 
 def test_write_gridfile():
     """ Test that can write a gridfile to disk """
     # Create a temperature grid with default structure
-    grid_desc = cruAKtemp.cruAKtemp_utils.write_gridfile("temperature")
+    grid_desc = cruAKtemp.utils.write_gridfile("temperature")
 
     # Create a temperature grid with described shape and type
-    grid_desc = cruAKtemp.cruAKtemp_utils.write_gridfile(
+    grid_desc = cruAKtemp.utils.write_gridfile(
         "temperature", gridshape=(3, 4), gridtype=np.float64
     )
 
     # Fail when attempting to create a grid with non-shape shape
     try:
-        grid_desc = cruAKtemp.cruAKtemp_utils.write_gridfile(
+        grid_desc = cruAKtemp.utils.write_gridfile(
             "temperature", gridshape="notashape"
         )
     except ValueError:
@@ -56,18 +57,18 @@ def test_write_gridfile():
 
 def test_write_default_temperature_cfg_file():
     """ test that util operation writes default cfg file """
-    cruAKtemp.cruAKtemp_utils.generate_default_temperature_run_cfg_file(SILENT=True)
+    cruAKtemp.utils.generate_default_temperature_run_cfg_file(SILENT=True)
 
 
 def test_initialize_opens_temperature_netcdf_file():
     """ Test that temperature netcdf file is opened """
-    ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
+    ct = cruAKtemp.CruAKtempMethod()
     ct.initialize_from_config_file()
 
 
 def test_get_timestep_from_date():
     """ Test get timestep from a date """
-    ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
+    ct = cruAKtemp.CruAKtempMethod()
     ct.initialize_from_config_file()
 
     # Timestep should initialize to zero
@@ -87,7 +88,7 @@ def test_get_timestep_from_date():
 def test_time_index_yields_correct_values():
     """ Check that we get the expected index into the netcdf file
         for specified month and year """
-    ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
+    ct = cruAKtemp.CruAKtempMethod()
     ct.initialize_from_config_file()
 
     # Test that first month yields index zero
@@ -112,7 +113,7 @@ def test_time_index_yields_correct_values():
 def test_specific_netcdf_values():
     """ Test that indexing yields specific values chosen from file
         Values were hand-verified using panoply tables"""
-    ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
+    ct = cruAKtemp.CruAKtempMethod()
     ct.initialize_from_config_file()
 
     # Indexes here are based on the reduced-resolution grid, if used
@@ -137,7 +138,7 @@ def test_specific_netcdf_values():
 def test_getting_monthly_annual_temp_values():
     """ Test that prior_months and prior_year values are correct
         Values were hand-verified using panoply tables"""
-    ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
+    ct = cruAKtemp.CruAKtempMethod()
     ct.initialize_from_config_file()
 
     # Test prior months values
