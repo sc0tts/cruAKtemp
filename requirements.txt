@@ -1,0 +1,5 @@
+netcdf4
+nose
+numpy
+python-dateutil
+pyyaml
