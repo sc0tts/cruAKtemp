@@ -2,14 +2,26 @@
 from setuptools import setup, find_packages
 
 
+def read(filename):
+    with open(filename, "r", encoding="utf-8") as fp:
+        return fp.read()
+
+
+long_description = u'\n\n'.join(
+    [
+        read('README.rst'),
+        read('AUTHORS.rst'),
+        read('CHANGES.rst'),
+    ]
+)
+
 setup(
     name="cruAKtemp",
-    version="0.1.0",
+    version="0.2.0.dev0",
     author="J Scott Stewart",
     author_email="james.stewart@colorado.edu",
     description="Python package for accessing CRU NCEP data temperature for Alaska",
-    long_description=open("README.md", encoding="utf-8").read(),
-    long_description_content_type="text/markdown",
+    long_description=long_description,
     url="http://github.com/permamodel/cruAKtemp",
     classifiers=[
         "Intended Audience :: Science/Research",
