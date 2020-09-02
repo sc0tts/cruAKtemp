@@ -10,7 +10,6 @@ Provides:
 import os
 
 tests_directory = os.path.dirname(__file__)
-cruAKtemp_directory = os.path.join(tests_directory, '..')
-data_directory = os.path.join(cruAKtemp_directory, 'data')
-examples_directory = os.path.join(cruAKtemp_directory, 'examples')
-
+cruAKtemp_directory = os.path.join(tests_directory, "..")
+data_directory = os.path.join(cruAKtemp_directory, "data")
+examples_directory = os.path.join(cruAKtemp_directory, "examples")

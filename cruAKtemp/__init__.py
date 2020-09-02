@@ -1,4 +1,5 @@
+from .cruAKtemp import CruAKtempMethod
+from .bmi import BmiCruAKtempMethod
 
-import cruAKtemp
-import bmi_cruAKtemp
-import cruAKtemp_utils as cu
+
+__all__ = ["BmiCruAKtempMethod", "CruAKtempMethod"]
