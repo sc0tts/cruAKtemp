@@ -1,3 +1,4 @@
+bmi-tester
 coveralls
 model_metadata
 pytest

@@ -36,3 +36,4 @@ test_script:
   - cmd: pytest -vvv
   - cmd: mmd find cruAKtemp:BmiCruAKtempMethod
   - cmd: mmd query --all cruAKtemp:BmiCruAKtempMethod
+  - cmd: bmi-test cruAKtemp:BmiCruAKtempMethod

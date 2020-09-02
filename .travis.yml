@@ -46,4 +46,5 @@ script:
 - mmd find cruAKtemp:BmiCruAKtempMethod
 - mmd query --all cruAKtemp:BmiCruAKtempMethod
 - mkdir _stage && mmd stage $(mmd find cruAKtemp:BmiCruAKtempMethod) ./_stage && ls _stage
+- bmi-test cruAKtemp:BmiCruAKtempMethod
 after_success: coveralls
