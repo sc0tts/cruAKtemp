@@ -45,5 +45,5 @@ script:
 - pytest --cov=cruAKtemp --cov-report=xml:$(pwd)/coverage.xml -vvv
 - mmd find cruAKtemp:BmiCruAKtempMethod
 - mmd query --all cruAKtemp:BmiCruAKtempMethod
-- mmd stage $(mmd find cruAKtemp:BmiCruAKtempMethod) ./_stage && ls _stage
+- mkdir _stage && mmd stage $(mmd find cruAKtemp:BmiCruAKtempMethod) ./_stage && ls _stage
 after_success: coveralls
