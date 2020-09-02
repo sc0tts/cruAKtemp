@@ -8,9 +8,8 @@ monthly temperature values for Alaska
 For use with Permamodel components
 
 """
-from __future__ import print_function
-
 import os
+import pkg_resources
 
 import numpy as np
 from tests import examples_directory
@@ -25,6 +24,8 @@ class FrostnumberMethod( frost_number.BmiFrostnumberMethod ):
 
 class BmiCruAKtempMethod(object):
     """ Provides BMI interface to cruAKtemp netcdf file """
+
+    METADATA = pkg_resources.resource_filename("cruAKtemp", "data/BmiCruAKtempMethod")
 
     def __init__(self):
         self._model = None

@@ -4,9 +4,12 @@ Changelog for cruAKtemp
 0.2.0 (unreleased)
 ------------------
 
-- Set up continuous integration on Travis
+- Updated the pymt model metadata and moved it into the data folder
+  of the package (#15)
 
-- Use pytest for testing (remove nose)
+- Added continuous integration for Linux, Mac, and Windows using Travis and AppVeyor
+
+- Changed to use pytest for testing (removed nose)
 
 - Moved tests outside of package
 
@@ -16,7 +19,7 @@ Changelog for cruAKtemp
 0.1.1 (2018-03-19)
 ------------------
 
-- Fixed BMI update_until to take a float argument
+- Fixed BMI update_until method to take a float argument
 
 0.1.0 (2018-03-15)
 ------------------

@@ -34,3 +34,5 @@ test_script:
   - cmd: pip install -r requirements-testing.txt
   - cmd: pip install -e .
   - cmd: pytest -vvv
+  - cmd: mmd find cruAKtemp:BmiCruAKtempMethod
+  - cmd: mmd query --all cruAKtemp:BmiCruAKtempMethod
