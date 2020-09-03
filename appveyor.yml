@@ -31,6 +31,7 @@ install:
 build: false
 
 test_script:
+  - cmd: mamba install bmi-tester --yes -c conda-forge
   - cmd: pip install -r requirements-testing.txt
   - cmd: pip install -e .
   - cmd: pytest -vvv

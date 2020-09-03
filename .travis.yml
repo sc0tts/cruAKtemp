@@ -41,6 +41,7 @@ before_install:
 install:
 - pip install -e .
 script:
+- mamba install bmi-tester --yes -c conda-forge
 - pip install -r requirements-testing.txt
 - pytest --cov=cruAKtemp --cov-report=xml:$(pwd)/coverage.xml -vvv
 - mmd find cruAKtemp:BmiCruAKtempMethod
