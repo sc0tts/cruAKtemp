@@ -1,7 +1,4 @@
-"""
-test_cruAKtemp.py
-  tests of the cruAKtemp component of permamodel
-"""
+"""tests of the AlaskaTemperature component of permamodel"""
 
 import datetime
 import pathlib
@@ -11,54 +8,52 @@ import pkg_resources
 import pytest
 from dateutil.relativedelta import relativedelta
 
-import cruAKtemp
-import cruAKtemp.utils
-
-data_directory = pathlib.Path(pkg_resources.resource_filename("cruAKtemp", "data"))
-examples_directory = pathlib.Path(
-    pkg_resources.resource_filename("cruAKtemp", "examples")
+from cru_alaska_temperature.utils import (
+    write_gridfile, generate_default_temperature_run_cfg_file
 )
+from cru_alaska_temperature import AlaskaTemperature
 
 
-# ---------------------------------------------------
-# Tests that the frost_number module is importing
-# ---------------------------------------------------
-def test_can_initialize_cruAKtemp_class():
-    cruAKtemp.CruAKtempMethod
+data_directory = pathlib.Path(pkg_resources.resource_filename(
+    "cru_alaska_temperature", "data")
+)
+examples_directory = pathlib.Path(
+    pkg_resources.resource_filename("cru_alaska_temperature", "examples")
+)
 
 
 def test_write_gridfile(tmpdir):
     """ Test that can write a gridfile to disk """
     # Create a temperature grid with default structure
-    cruAKtemp.utils.write_gridfile("temperature")
+    write_gridfile("temperature")
 
     # Create a temperature grid with described shape and type
-    cruAKtemp.utils.write_gridfile("temperature", gridshape=(3, 4), gridtype=np.float64)
+    write_gridfile("temperature", gridshape=(3, 4), gridtype=np.float64)
 
     # Fail when attempting to create a grid with non-shape shape
     with pytest.raises(ValueError):
-        cruAKtemp.utils.write_gridfile("temperature", gridshape="notashape")
+        write_gridfile("temperature", gridshape="notashape")
 
     with tmpdir.as_cwd():
-        cruAKtemp.utils.write_gridfile("temperature", filename="temperature.grd")
+        write_gridfile("temperature", filename="temperature.grd")
         assert (tmpdir / "temperature.grd").isfile()
 
 
 def test_write_default_temperature_cfg_file(tmpdir):
     """ test that util operation writes default cfg file """
     with tmpdir.as_cwd():
-        cruAKtemp.utils.generate_default_temperature_run_cfg_file(SILENT=True)
+        generate_default_temperature_run_cfg_file(SILENT=True)
 
 
 def test_initialize_opens_temperature_netcdf_file():
     """ Test that temperature netcdf file is opened """
-    ct = cruAKtemp.CruAKtempMethod()
+    ct = AlaskaTemperature()
     ct.initialize_from_config_file()
 
 
 def test_get_timestep_from_date():
     """ Test get timestep from a date """
-    ct = cruAKtemp.CruAKtempMethod()
+    ct = AlaskaTemperature()
     ct.initialize_from_config_file()
 
     # Timestep should initialize to zero
@@ -78,7 +73,7 @@ def test_get_timestep_from_date():
 def test_time_index_yields_correct_values():
     """ Check that we get the expected index into the netcdf file
         for specified month and year """
-    ct = cruAKtemp.CruAKtempMethod()
+    ct = AlaskaTemperature()
     ct.initialize_from_config_file()
 
     # Test that first month yields index zero
@@ -103,7 +98,7 @@ def test_time_index_yields_correct_values():
 def test_specific_netcdf_values():
     """ Test that indexing yields specific values chosen from file
         Values were hand-verified using panoply tables"""
-    ct = cruAKtemp.CruAKtempMethod()
+    ct = AlaskaTemperature()
     ct.initialize_from_config_file()
 
     # Indexes here are based on the reduced-resolution grid, if used
@@ -130,7 +125,7 @@ def test_specific_netcdf_values():
 def test_getting_monthly_annual_temp_values():
     """ Test that prior_months and prior_year values are correct
         Values were hand-verified using panoply tables"""
-    ct = cruAKtemp.CruAKtempMethod()
+    ct = AlaskaTemperature()
     ct.initialize_from_config_file()
 
     # Test prior months values
@@ -172,7 +167,7 @@ def test_getting_monthly_annual_temp_values():
 def test_can_increment_to_end_of_run(tmpdir):
     """ Test that we can get values for last timestep """
     with tmpdir.as_cwd():
-        ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
+        ct = AlaskaTemperature()
         ct.initialize_from_config_file()
 
         number_of_years = ct._last_timestep - ct._first_timestep
@@ -184,15 +179,15 @@ def test_can_increment_to_end_of_run(tmpdir):
 
 def test_first_and_last_valid_dates():
     """ Test that first and last valid dates are read from netcdf file """
-    ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
+    ct = AlaskaTemperature()
     ct.initialize_from_config_file()
     assert datetime.date(1901, 1, 1) == ct._first_valid_date
     assert datetime.date(2009, 12, 31) == ct._last_valid_date
 
 
 def test_jan_jul_arrays():
-    """ test that cruAKtemp provides Jan and Jul values as individual arrays """
-    ct = cruAKtemp.cruAKtemp.CruAKtempMethod()
+    """ test that AlaskaTemperature provides Jan and Jul values as individual arrays """
+    ct = AlaskaTemperature()
     ct.initialize_from_config_file()
     expected_jan_val = -25.7
     expected_jul_val = 11.4

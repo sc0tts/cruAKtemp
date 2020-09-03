@@ -1,0 +1,6 @@
+name: AlaskaTemperature
+language: python
+
+package: cru_alaska_temperature.bmi
+class: AlaskaTemperatureBMI
+initialize_args: "cruAKtemp.cfg"

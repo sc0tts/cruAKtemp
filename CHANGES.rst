@@ -1,8 +1,10 @@
-Changelog for cruAKtemp
-=======================
+Changelog for cru_alaska_temperature
+====================================
 
 0.2.0 (unreleased)
 ------------------
+
+- Renamed package, modules, and classes to follow Python naming conventions
 
 - Updated the cruAKtemp BMI for BMI version 2 and added bmi-tester
   to the continuous integration builds (#16)

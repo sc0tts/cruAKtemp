@@ -35,6 +35,6 @@ test_script:
   - cmd: pip install -r requirements-testing.txt
   - cmd: pip install -e .
   - cmd: pytest -vvv
-  - cmd: mmd find cruAKtemp:BmiCruAKtempMethod
-  - cmd: mmd query --all cruAKtemp:BmiCruAKtempMethod
-  - cmd: bmi-test cruAKtemp:BmiCruAKtempMethod
+  - cmd: mmd find cru_alaska_temperature:AlaskaTemperatureBMI
+  - cmd: mmd query --all cru_alaska_temperature:AlaskaTemperatureBMI
+  - cmd: bmi-test cru_alaska_temperature:AlaskaTemperatureBMI
