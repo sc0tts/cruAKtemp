@@ -4,6 +4,9 @@ Changelog for cruAKtemp
 0.2.0 (unreleased)
 ------------------
 
+- Updated the cruAKtemp BMI for BMI version 2 and added bmi-tester
+  to the continuous integration builds (#16)
+
 - Updated the pymt model metadata and moved it into the data folder
   of the package (#15)
 

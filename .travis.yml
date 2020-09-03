@@ -37,13 +37,15 @@ before_install:
     source $HOME/.bashrc
   fi
 - micromamba activate
-- micromamba install python=$PYTHON pip --yes -c conda-forge
+- micromamba install python=$PYTHON pip mamba --yes -c conda-forge
 install:
 - pip install -e .
 script:
+- mamba install bmi-tester --yes -c conda-forge
 - pip install -r requirements-testing.txt
 - pytest --cov=cruAKtemp --cov-report=xml:$(pwd)/coverage.xml -vvv
 - mmd find cruAKtemp:BmiCruAKtempMethod
 - mmd query --all cruAKtemp:BmiCruAKtempMethod
 - mkdir _stage && mmd stage $(mmd find cruAKtemp:BmiCruAKtempMethod) ./_stage && ls _stage
+- bmi-test cruAKtemp:BmiCruAKtempMethod
 after_success: coveralls

@@ -131,6 +131,9 @@ class BmiCruAKtempMethod(object):
         # Currently, all models must start from timestep zero
         return np.float64(0)
 
+    def get_var_location(self, long_var_name):
+        return "node"
+
     def get_var_name(self, long_var_name):
         return self._var_name_map[long_var_name]
 
@@ -225,7 +228,7 @@ class BmiCruAKtempMethod(object):
         # Model keeps track of timestep as a timedelta
         # Here, find the seconds and divide by seconds/day
         # to get the number of days
-        return self._model._timestep_duration
+        return float(self._model._timestep_duration)
 
     def get_value_ref(self, var_name):
         return self._values[var_name]
@@ -246,8 +249,8 @@ class BmiCruAKtempMethod(object):
     def get_var_nbytes(self, var_name):
         return np.asarray(self.get_value_ref(var_name)).nbytes
 
-    def get_value(self, var_name):
-        return self.get_value_ref(var_name).copy()
+    def get_value(self, var_name, out):
+        out[:] = self.get_value_ref(var_name).flat
 
     def get_var_type(self, var_name):
         return str(self.get_value_ref(var_name).dtype)
@@ -260,30 +263,33 @@ class BmiCruAKtempMethod(object):
             if var_name in var_name_list:
                 return grid_id
 
-    def get_grid_shape(self, grid_id):
+    def get_grid_shape(self, grid_id, shape):
         """Number of rows and columns of uniform rectilinear grid."""
-        var_name = self._grids[grid_id]
-        print("shape of {}".format(var_name))
-        value = np.array(self.get_value_ref(var_name)).shape
-        return value
+        var_on_grid = self._grids[grid_id]
+        shape[:] = self.get_value_ref(var_on_grid).shape
+        return shape
 
     def get_grid_size(self, grid_id):
-        grid_size = self.get_grid_shape(grid_id)
-        if grid_size == ():
-            return 1
-        else:
-            return int(np.prod(grid_size))
+        var_on_grid = self._grids[grid_id]
+        return self.get_value_ref(var_on_grid).size
 
     # Todo: Revise once we can work with georeferenced data in the CMF.
-    def get_grid_spacing(self, grid_id):
-        return np.array([10000.0, 10000.0], dtype="float32")
+    def get_grid_spacing(self, grid_id, spacing):
+        spacing[:] = (10000.0, 10000.0)
+        return spacing
 
     # Todo: Revise once we can work with georeferenced data in the CMF.
-    def get_grid_origin(self, grid_id):
-        return np.array([0.0, 0.0], dtype="float32")
+    def get_grid_origin(self, grid_id, origin):
+        origin[:] = (0.0, 0.0)
+        return origin
 
-    def get_grid_rank(self, var_id):
-        return len(self.get_grid_shape(var_id))
+    def get_grid_rank(self, grid_id):
+        var_on_grid = self._grids[grid_id]
+        return self.get_value_ref(var_on_grid).ndim
+
+    def get_grid_node_count(self, grid_id):
+        var_on_grid = self._grids[grid_id]
+        return self.get_value_ref(var_on_grid).size
 
 
 if __name__ == "__main__":
