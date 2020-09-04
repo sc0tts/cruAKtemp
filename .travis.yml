@@ -15,7 +15,7 @@ jobs:
     os: linux
     script:
     - pip install flake8
-    - flake8 cruAKtemp tests
+    - flake8 cru_alaska_temperature tests
 before_install:
 - |
   if [[ $TRAVIS_OS_NAME == "osx" ]]; then
@@ -43,9 +43,9 @@ install:
 script:
 - mamba install bmi-tester --yes -c conda-forge
 - pip install -r requirements-testing.txt
-- pytest --cov=cruAKtemp --cov-report=xml:$(pwd)/coverage.xml -vvv
-- mmd find cruAKtemp:BmiCruAKtempMethod
-- mmd query --all cruAKtemp:BmiCruAKtempMethod
-- mkdir _stage && mmd stage $(mmd find cruAKtemp:BmiCruAKtempMethod) ./_stage && ls _stage
-- bmi-test cruAKtemp:BmiCruAKtempMethod
+- pytest --cov=cru_alaska_temperature --cov-report=xml:$(pwd)/coverage.xml -vvv
+- mmd find cru_alaska_temperature:AlaskaTemperatureBMI
+- mmd query --all cru_alaska_temperature:AlaskaTemperatureBMI
+- mkdir _stage && mmd stage $(mmd find cru_alaska_temperature:AlaskaTemperatureBMI) ./_stage && ls _stage
+- bmi-test cru_alaska_temperature:AlaskaTemperatureBMI
 after_success: coveralls

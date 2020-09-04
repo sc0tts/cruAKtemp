@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-cruAKtemp.py
-
 Reads average monthly temperature in Alaska from an upscaled version of
 CRU NCEP data for Alaska
 """
@@ -21,9 +19,11 @@ from dateutil.relativedelta import relativedelta
 # Using netcdf4
 from netCDF4 import Dataset
 
-data_directory = pathlib.Path(pkg_resources.resource_filename("cruAKtemp", "data"))
+data_directory = pathlib.Path(pkg_resources.resource_filename(
+    "cru_alaska_temperature", "data")
+)
 examples_directory = pathlib.Path(
-    pkg_resources.resource_filename("cruAKtemp", "examples")
+    pkg_resources.resource_filename("cru_alaska_temperature", "examples")
 )
 
 
@@ -41,7 +41,7 @@ def in_bounds_or_raise(value, minval=None, maxval=None):
 
     Examples
     --------
-    >>> from cruAKtemp.cruAKtemp import in_bounds_or_raise
+    >>> from cru_alaska_temperature.alaska_temperature import in_bounds_or_raise
     >>> in_bounds_or_raise(0, -1, 1)
     >>> in_bounds_or_raise(0, maxval=1)
     >>> in_bounds_or_raise(0, minval=0)
@@ -62,10 +62,10 @@ def in_bounds_or_raise(value, minval=None, maxval=None):
         raise ValueError(message)
 
 
-class CruAKtempMethod:
+class AlaskaTemperature:
     def __init__(self):
         self._cru_temperature_nc_filename = None  # Name of input netcdf file
-        self._cru_temperature_nc_filename_default = data_directory / "cruAKtemp.nc"
+        self._cru_temperature_nc_filename_default = data_directory / "cru_ak_temp.nc"
         # Default name of input netcdf file
         self._cru_temperature_ncfile = Dataset  # netCDF file handle
         self._cru_temperature = None  # This will point to the nc file data

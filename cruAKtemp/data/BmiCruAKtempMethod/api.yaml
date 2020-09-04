@@ -1,6 +1,0 @@
-name: CRUAKTemp
-language: python
-
-package: cruAKtemp.bmi_cruAKtemp
-class: BmiCruAKtempMethod
-initialize_args: "cruAKtemp.cfg"

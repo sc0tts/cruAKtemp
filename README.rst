@@ -1,16 +1,16 @@
-cruAKtemp
-=========
+cru_alaska_temperature
+======================
 
 .. note::
 
-  cruAKtemp is still in development and likely does not yet work
+  cru_alaska_temperature is still in development and likely does not yet work
   as a package or pymt component
 
 .. note::
   This version does *not* contain the netcdf file!  Because uncompressed,
   it is too large for github.
 
-The Python package *cruAKtemp* provides access to a subsample of CRU NCEP
+The Python package *cru_alaska_temperature* provides access to a subsample of CRU NCEP
 data temperature for Alaska from:
 
   http://ckan.snap.uaf.edu/dataset/historical-monthly-and-derived-temperature-products-771m-cru-ts
@@ -34,8 +34,8 @@ bmi-tester
 ----------
 
 If you have installed CSDMS's 'bmi-tester' package, you can verify that
-cruAKtemp is BMI-compliant by running:
+AlaskaTemperatureBMI is BMI-compliant by running:
 
 .. code:: bash
 
-   $ bmi-tester cruAKtemp:BmiCruAKtempMethod 
+   $ bmi-tester cru_alaska_temperature:AlaskaTemperatureBMI

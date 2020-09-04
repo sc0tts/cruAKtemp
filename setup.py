@@ -16,11 +16,11 @@ long_description = u'\n\n'.join(
 )
 
 setup(
-    name="cruAKtemp",
+    name="cru_alaska_temperature",
     version="0.2.0.dev0",
     author="J Scott Stewart",
     author_email="james.stewart@colorado.edu",
-    description="Python package for accessing CRU NCEP data temperature for Alaska",
+    description="Python package for accessing CRU NCEP temperature data for Alaska",
     long_description=long_description,
     url="http://github.com/permamodel/cruAKtemp",
     classifiers=[

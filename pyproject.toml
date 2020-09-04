@@ -1,12 +1,12 @@
 [tool.pytest.ini_options]
 minversion = "5.0"
-testpaths = ["cruAKtemp", "tests"]
+testpaths = ["cru_alaska_temperature", "tests"]
 norecursedirs = [".*", "*.egg*", "build", "dist"]
 addopts = """
     --ignore setup.py
-    --ignore cruAKtemp/data
-    --ignore cruAKtemp/examples
-    --ignore cruAKtemp/reference
+    --ignore cru_alaska_temperature/data
+    --ignore cru_alaska_temperature/examples
+    --ignore cru_alaska_temperature/reference
     --tb native
     --strict
     --durations 16

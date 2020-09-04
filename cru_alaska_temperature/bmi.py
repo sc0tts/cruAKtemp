@@ -9,23 +9,28 @@ For use with Permamodel components
 
 """
 import os
+import pathlib
 import pkg_resources
 
 import numpy as np
-from tests import examples_directory
 
-import cruAKtemp
-
+from .alaska_temperature import AlaskaTemperature
 """
 class FrostnumberMethod( frost_number.BmiFrostnumberMethod ):
     _thisname = 'this name'
 """
 
+examples_directory = pathlib.Path(
+    pkg_resources.resource_filename("cru_alaska_temperature", "examples")
+)
 
-class BmiCruAKtempMethod(object):
-    """ Provides BMI interface to cruAKtemp netcdf file """
 
-    METADATA = pkg_resources.resource_filename("cruAKtemp", "data/BmiCruAKtempMethod")
+class AlaskaTemperatureBMI(object):
+    """Provides BMI interface to CRU Alaska Temperature data"""
+
+    METADATA = pkg_resources.resource_filename(
+        "cru_alaska_temperature", "data/AlaskaTemperatureBMI"
+    )
 
     def __init__(self):
         self._model = None
@@ -34,7 +39,7 @@ class BmiCruAKtempMethod(object):
         self._grids = {}
         self._grid_type = {}
 
-        self._name = "CruAKtemp module"
+        self._name = "AlaskaTemperature"
 
         self._att_map = {
             "model_name": "PermaModel_cruAKtemp",
@@ -43,7 +48,7 @@ class BmiCruAKtempMethod(object):
             "grid_type": "uniform_rectlinear",
             "time_step_type": "fixed",
             "step_method": "explicit",
-            "comp_name": "cruAKtemp",
+            "comp_name": "AlaskaTemperatureBMI",
             "model_family": "PermaModel",
             "cfg_extension": "_cruAKtemp_model.cfg",
             "time_units": "days",
@@ -75,7 +80,7 @@ class BmiCruAKtempMethod(object):
         }
 
     def initialize(self, cfg_file=None):
-        self._model = cruAKtemp.CruAKtempMethod()
+        self._model = AlaskaTemperature()
 
         self._model.initialize_from_config_file(cfg_filename=cfg_file)
 
@@ -294,7 +299,7 @@ class BmiCruAKtempMethod(object):
 
 if __name__ == "__main__":
     # Execute standalone test run
-    crumeth = BmiCruAKtempMethod()
+    crumeth = AlaskaTemperatureBMI()
     crumeth.initialize(
         cfg_file=os.path.join(examples_directory, "default_temperature.cfg")
     )

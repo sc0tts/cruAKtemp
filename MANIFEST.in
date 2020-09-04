@@ -2,6 +2,5 @@ include *.rst
 include *.txt
 include *.yml
 include LICENSE
-recursive-include cruAKtemp/data *
-recursive-include cruAKtemp/examples *
-recursive-exclude .bmi *
+recursive-include cru_alaska_temperature/data *
+recursive-include cru_alaska_temperature/examples *
